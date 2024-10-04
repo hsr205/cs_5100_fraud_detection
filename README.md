@@ -1,1 +1,1 @@
-# cs_5100_fraud_detection
+# Foundations of Artificial Intelligence - Fraud Detection Application

@@ -22,10 +22,6 @@ class FraudDataset(Dataset):
             self.data_loader.get_data_frame_from_zip_file(file_path=self.file_path, file_name=self.file_name))
         return num_rows
 
-    """
-    
-    """
-
     # TODO: Add return datatype
     def __getitem__(self, idx):
         pass

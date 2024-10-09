@@ -9,7 +9,7 @@ logger: Logger = Logger().get_logger()
 
 
 @dataclass
-class DataLoader:
+class CustomDataLoader:
 
     def get_data_frame_from_csv_file(self, file_path: str) -> pd.DataFrame:
         data_frame: pd.DataFrame = pd.read_csv(file_path)

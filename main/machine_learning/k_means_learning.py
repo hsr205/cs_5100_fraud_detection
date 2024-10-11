@@ -3,22 +3,22 @@ from typing import Any
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from logger import Logger
 from matplotlib import ticker
 from static.constants import Constants
+
+logger: Logger = Logger().get_logger()
 
 sns.set(style="whitegrid")
 
 
 class KMeansLearning:
 
-    def __init__(self, data_loader: Any, file_path: str, file_name: str, transform_to_tensor=None,
-                 target_transform=None):
+    def __init__(self, data_loader: Any, file_path: str, file_name: str):
         self.data_loader = data_loader
         self.file_path = file_path
         self.file_name = file_name
         self.data_frame = data_loader.get_data_frame_from_zip_file(file_path=file_path, file_name=file_name)
-        self.transform_to_tensor = transform_to_tensor
-        self.target_transform = target_transform
 
     def display_sample_of_data_points(self, num_data_points: int, x_axis_str: str, y_axis_str: str) -> None:
         sample_data_frame: pd.DataFrame = self.get_sample_data_from_data_frame(num_data_points=num_data_points)

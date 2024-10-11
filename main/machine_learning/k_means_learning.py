@@ -1,6 +1,12 @@
 from typing import Any
 
+import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
+from matplotlib import ticker
+from static.constants import Constants
+
+sns.set(style="whitegrid")
 
 
 class KMeansLearning:
@@ -14,21 +20,34 @@ class KMeansLearning:
         self.transform_to_tensor = transform_to_tensor
         self.target_transform = target_transform
 
-    def display_sample_of_data_points(self, num_data_points: int) -> None:
+    def display_sample_of_data_points(self, num_data_points: int, x_axis_str: str, y_axis_str: str) -> None:
         sample_data_frame: pd.DataFrame = self.data_frame.iloc[:num_data_points]
 
-        print(sample_data_frame)
+        x_axis: pd.Series = sample_data_frame[x_axis_str]
+        y_axis: pd.Series = sample_data_frame[y_axis_str]
 
-        # x_axis: pd.Series = sample_data_frame['']
-        # y_axis: pd.Series = sample_data_frame['']
-        #
-        # plt.plot(x_axis, y_axis)
-        #
-        # plt.title("Sample Data Display")
-        # plt.xlabel("X axis")
-        # plt.ylabel("Y axis")
-        #
-        # plt.scatter()
-        # plt.grid(True)
-        #
-        # plt.show()
+        self.add_text_labels(x_axis_str=x_axis_str, y_axis_str=y_axis_str)
+
+        self.convert_values_to_decimal_format()
+
+        self.add_color_indicating_fraud_data_points(sample_data_frame=sample_data_frame, x_axis=x_axis, y_axis=y_axis)
+
+        plt.grid(True)
+
+        plt.show()
+
+    def add_color_indicating_fraud_data_points(self, sample_data_frame: pd.DataFrame, x_axis: pd.Series,
+                                               y_axis: pd.Series):
+        fraud_status: pd.Series = sample_data_frame[Constants.IS_FRAUD]
+        plt.scatter(x_axis, y_axis, c=fraud_status, cmap='coolwarm', alpha=0.75)
+        cbar = plt.colorbar()
+        cbar.set_label('Fraud Status')
+
+    def add_text_labels(self, x_axis_str: str, y_axis_str: str) -> None:
+        plt.title("Sample Data Display")
+        plt.xlabel(x_axis_str)
+        plt.ylabel(y_axis_str)
+
+    def convert_values_to_decimal_format(self) -> None:
+        plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f'{x:,.0f}'))
+        plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda y, _: f'{y:,.0f}'))

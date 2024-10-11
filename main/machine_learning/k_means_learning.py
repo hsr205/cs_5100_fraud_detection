@@ -37,7 +37,7 @@ class KMeansLearning:
         plt.show()
 
     def add_color_indicating_fraud_data_points(self, sample_data_frame: pd.DataFrame, x_axis: pd.Series,
-                                               y_axis: pd.Series):
+                                               y_axis: pd.Series) -> None:
         fraud_status: pd.Series = sample_data_frame[Constants.IS_FRAUD]
         plt.scatter(x_axis, y_axis, c=fraud_status, cmap='coolwarm', alpha=0.75)
         cbar = plt.colorbar()

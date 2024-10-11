@@ -1,0 +1,11 @@
+class Constants:
+    STEP: str = "step"
+    AMOUNT: str = "amount"
+    IS_FRAUD: str = "isFraud"
+    TRANSACTION_TYPE: str = "type"
+    NEW_RECIPIENT_BALANCE: str = "newbalanceDest"
+    NEW_TRANSACTION_BALANCE: str = "newbalanceOrig"
+    BEFORE_TRANSACTION_BALANCE: str = "oldbalanceOrg"
+    RECIPIENT_CUSTOMER_ACCOUNT_NAME: str = "nameDest"
+    INITIAL_RECIPIENT_BALANCE: str = "oldbalanceDest"
+    INITIATING_CUSTOMER_ACCOUNT_NAME: str = "nameOrig"

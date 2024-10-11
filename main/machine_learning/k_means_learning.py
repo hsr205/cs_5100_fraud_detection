@@ -21,7 +21,7 @@ class KMeansLearning:
         self.target_transform = target_transform
 
     def display_sample_of_data_points(self, num_data_points: int, x_axis_str: str, y_axis_str: str) -> None:
-        sample_data_frame: pd.DataFrame = self.data_frame.iloc[:num_data_points]
+        sample_data_frame: pd.DataFrame = self.get_sample_data_from_data_frame(num_data_points=num_data_points)
 
         x_axis: pd.Series = sample_data_frame[x_axis_str]
         y_axis: pd.Series = sample_data_frame[y_axis_str]
@@ -35,6 +35,9 @@ class KMeansLearning:
         plt.grid(True)
 
         plt.show()
+
+    def get_sample_data_from_data_frame(self, num_data_points: int) -> pd.DataFrame:
+        return self.data_frame.iloc[:num_data_points]
 
     def add_color_indicating_fraud_data_points(self, sample_data_frame: pd.DataFrame, x_axis: pd.Series,
                                                y_axis: pd.Series) -> None:

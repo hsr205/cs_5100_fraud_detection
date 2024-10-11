@@ -1,14 +1,15 @@
+from typing import Any
+
 from torch.utils.data import Dataset
 
-from custom_data_loader import CustomDataLoader
-from logger import Logger
+from main.logger import Logger
 
 logger: Logger = Logger().get_logger()
 
 
 class FraudDataset(Dataset):
 
-    def __init__(self, data_loader: CustomDataLoader, file_path: str, file_name: str, transform_to_tensor=None,
+    def __init__(self, data_loader: Any, file_path: str, file_name: str, transform_to_tensor=None,
                  target_transform=None):
         self.data_loader = data_loader
         self.file_path = file_path

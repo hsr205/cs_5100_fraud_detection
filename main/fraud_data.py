@@ -13,14 +13,13 @@ class FraudDataset(Dataset):
         self.data_loader = data_loader
         self.file_path = file_path
         self.file_name = file_name
+        self.data_frame = data_loader.get_data_frame_from_zip_file(file_path=file_path, file_name=file_name)
         self.transform_to_tensor = transform_to_tensor
         self.target_transform = target_transform
 
     # TODO: Limit the amount of times we go to the data set
     def __len__(self) -> int:
-        num_rows: int = len(
-            self.data_loader.get_data_frame_from_zip_file(file_path=self.file_path, file_name=self.file_name))
-        return num_rows
+        return len(self.data_frame)
 
     # TODO: Add return datatype
     def __getitem__(self, idx):

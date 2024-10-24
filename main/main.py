@@ -19,8 +19,9 @@ def main() -> int:
     k_means: KMeansLearning = KMeansLearning(data_loader=data_loader,
                                              file_path=file_path,
                                              file_name=file_name,
-                                             transform_to_tensor=None,
-                                             target_transform=None)
+                                            #  transform_to_tensor=None,
+                                            #  target_transform=None, 
+                                             k=3)
 
     k_means.display_sample_of_data_points(num_data_points=1000, x_axis_str=Constants.BEFORE_TRANSACTION_BALANCE, y_axis_str=Constants.NEW_TRANSACTION_BALANCE)
 
@@ -40,6 +41,8 @@ def main() -> int:
     # logger.info(f"Num of rows NOT indicating fraud: {fraud_data_frame[fraud_data_frame['isFraud'] == 0].shape[0]}") # 6,354,407
 
     # logger.info(f"{fraud_data_frame.head()}")
+
+    k_means.execute_clustering()
 
     return 0
 

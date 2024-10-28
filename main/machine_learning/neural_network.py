@@ -10,6 +10,7 @@ We define our neural network by subclassing nn.Module
 class NeuralNetwork(nn.Module):
 
     def __init__(self):
+        super().__init__()
         device = (
             "cuda"
             if torch.cuda.is_available()

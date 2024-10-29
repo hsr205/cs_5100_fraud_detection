@@ -13,7 +13,7 @@ pd.set_option('display.max_columns', None)
 def main() -> int:
     data_loader: CustomDataLoader = CustomDataLoader()
 
-    # Add local file path to .zip file
+    # Include local file path to data
     file_path: str = ""
     file_name: str = "synthetic_financial_datasets_log.csv"
 
@@ -25,9 +25,10 @@ def main() -> int:
 
     fraud_data_frame: pd.DataFrame = fraud_data.data_loader.get_data_frame_from_zip_file(file_path=file_path,
                                                                                          file_name=file_name)
+
     data_preprocessor: DataPreprocessor = DataPreprocessor(fraud_data_frame=fraud_data_frame)
 
-    data_preprocessor.preprocess_type_column_data()
+    print(f"{data_preprocessor.preprocess_data_frame().head()}")
 
     return 0
 

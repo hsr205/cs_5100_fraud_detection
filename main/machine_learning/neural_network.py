@@ -89,8 +89,6 @@ class DataPreprocessor:
                                   "newbalanceDest",
                                   "isFraud"]
 
-
-
         data_frame: pd.DataFrame = self.fraud_data_frame[column_list].sample(n=sample_size, random_state=random_seed)
 
         # Specifies the transformations each column needS to undergo

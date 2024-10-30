@@ -1,4 +1,7 @@
 class Constants:
+    MPS: str = "mps"
+    CPU: str = "cpu"
+    CUDA:str = "cuda"
     STEP: str = "step"
     AMOUNT: str = "amount"
     IS_FRAUD: str = "isFraud"

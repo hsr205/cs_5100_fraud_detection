@@ -3,9 +3,8 @@ import torch
 from logger import Logger
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from static.constants import Constants
 from torch import nn, Tensor
-
-from main.static.constants import Constants
 
 logger: Logger = Logger().get_logger()
 
@@ -15,8 +14,7 @@ We define our neural network by subclassing nn.Module
 
 
 class NeuralNetwork(nn.Module):
-
-    tensor:Tensor = Tensor()
+    tensor: Tensor = Tensor()
 
     def __init__(self):
         super().__init__()
@@ -49,7 +47,9 @@ class DataPreprocessor:
         data_series: pd.Series = self.fraud_data_frame[Constants.IS_FRAUD].sample(n=self.sample_size,
                                                                                   random_state=self.random_seed)
 
-        tensor = torch.tensor(data_series.values)
+        # We convert the row vector in a column vector in order to ensure that
+        # the shape matches the shape of the model's output tensor
+        tensor = torch.tensor(data_series.values).unsqueeze(1)
 
         return tensor
 

@@ -28,10 +28,9 @@ def main() -> int:
 
     data_preprocessor: DataPreprocessor = DataPreprocessor(fraud_data_frame=fraud_data_frame)
 
-    print(f"{data_preprocessor.preprocess_data_frame().head()}")
-    count = data_preprocessor.preprocess_data_frame()['isFraud'].value_counts()
-    # Logs the count of observations that are / are not fraud in the sample dataset
-    logger.info(f"count = {count}")
+    # logger.info(f"{data_preprocessor.preprocess_data_frame().head()}")
+    logger.info(f"{data_preprocessor.get_y_labels_as_tensor()}")
+    logger.info(f"{data_preprocessor.get_x_labels_as_tensor()}")
 
     return 0
 

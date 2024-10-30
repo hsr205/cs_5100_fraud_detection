@@ -34,7 +34,7 @@ class DataPreprocessor:
     def preprocess_data_frame(self) -> pd.DataFrame:
         """
 
-        Takes a random sample of size "sample_size" (defaulted is 100,000) observations
+        Takes a 'random' sample of size "sample_size" (defaulted is 100,000) observations
         and conducts data preprocessing on each of the features
 
         :return: pandas data frame containing the preprocesses data

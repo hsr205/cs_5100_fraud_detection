@@ -16,15 +16,18 @@ We define our neural network by subclassing nn.Module
 
 class NeuralNetwork(nn.Module):
 
+    tensor:Tensor = Tensor()
+
     def __init__(self):
         super().__init__()
-        device = (
+        device = torch.device(
             Constants.CUDA
             if torch.cuda.is_available()
             else Constants.MPS
             if torch.backends.mps.is_available()
             else Constants.CPU
         )
+        tensor = self.tensor.to(device)
         logger.info(f"Using {device} device")
 
 

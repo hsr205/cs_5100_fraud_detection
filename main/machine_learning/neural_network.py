@@ -13,22 +13,6 @@ We define our neural network by subclassing nn.Module
 """
 
 
-class NeuralNetwork(nn.Module):
-    tensor: Tensor = Tensor()
-
-    def __init__(self):
-        super().__init__()
-        device = torch.device(
-            Constants.CUDA
-            if torch.cuda.is_available()
-            else Constants.MPS
-            if torch.backends.mps.is_available()
-            else Constants.CPU
-        )
-        tensor = self.tensor.to(device)
-        logger.info(f"Using {device} device")
-
-
 class DataPreprocessor:
     random_seed: int = 42
     sample_size: int = 100000
@@ -107,3 +91,29 @@ class DataPreprocessor:
                                          'new_balance_origin_normalized', 'new_balance_destination_normalized']
 
         return pd.DataFrame(processed_data, columns=result_column_list)
+
+
+# TODO: Still testing this clas
+class NeuralNetwork(nn.Module):
+    tensor: Tensor = Tensor()
+    fraud_data_frame: pd.DataFrame = pd.DataFrame
+    data_preprocessor: DataPreprocessor = DataPreprocessor(fraud_data_frame=fraud_data_frame)
+
+    def __init__(self):
+        super().__init__()
+        device = torch.device(
+            Constants.CUDA
+            if torch.cuda.is_available()
+            else Constants.MPS
+            if torch.backends.mps.is_available()
+            else Constants.CPU
+        )
+        tensor = self.tensor.to(device)
+        logger.info(f"Using {device} device")
+        # Creates the input layer of the neural network: self.data_preprocessor.get_x_labels_as_tensor().shape[1] (4)
+        # and specifies the number of output nodes in the following hidden layer (10)
+        self.fc1 = nn.Linear(self.data_preprocessor.get_x_labels_as_tensor().shape[1], 10)
+        # Following hidden layer
+        self.fc2 = nn.Linear(10, 5)
+        # Output layer
+        self.fc3 = nn.Linear(5, 1)

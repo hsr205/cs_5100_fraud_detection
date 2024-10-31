@@ -64,6 +64,10 @@ with regard to the specific approaches used within our neural network.
 
 `__init__()` - ADD DESCRIPTION
 
+`train_neural_network()` - ADD DESCRIPTION
+
+`get_device()` - ADD DESCRIPTION
+
 ---
 
 ## Execution_Code

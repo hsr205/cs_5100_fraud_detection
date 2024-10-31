@@ -151,7 +151,6 @@ class Model:
             for inputs, labels in self.data_preprocessor.get_tensor_dataset():
                 inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located
                 inputs = inputs.view(inputs.size(0), -1)
-                # labels = labels.to(self.device)
                 # Move tensor labels to same devise the Model is located and convert values to 32-bit
                 labels = labels.to(self.device, dtype=torch.float32)
                 self.optimizer.zero_grad()  # Zero the gradients as we are going through a new interation

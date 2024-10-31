@@ -1,10 +1,16 @@
+from dataclasses import dataclass
+
 import pandas as pd
 import torch
 from logger import Logger
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from static.constants import Constants
-from torch import nn, Tensor
+from torch import nn, Tensor, device
+from torch.nn import BCELoss
+from torch.utils.data import DataLoader
+from torch.utils.data import TensorDataset
+from tqdm import tqdm
 
 logger: Logger = Logger().get_logger()
 
@@ -20,6 +26,13 @@ class DataPreprocessor:
     def __init__(self, fraud_data_frame: pd.DataFrame):
         self.fraud_data_frame = fraud_data_frame
 
+    def get_tensor_dataset(self, batch_size: int = 32):
+        features: Tensor = self.get_x_labels_as_tensor()
+        outputs: Tensor = self.get_y_labels_as_tensor()
+        dataset: TensorDataset = TensorDataset(features, outputs)
+        dataloader: DataLoader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        return dataloader
+
     def get_y_labels_as_tensor(self) -> Tensor:
         """
         Retrieves the isFraud column (series) and takes a predefined sample size (100,000 observations).
@@ -33,7 +46,7 @@ class DataPreprocessor:
 
         # We convert the row vector in a column vector in order to ensure that
         # the shape matches the shape of the model's output tensor
-        tensor = torch.tensor(data_series.values).unsqueeze(1)
+        tensor = torch.tensor(data_series.values, dtype=torch.float32).unsqueeze(1)
 
         return tensor
 
@@ -93,27 +106,73 @@ class DataPreprocessor:
         return pd.DataFrame(processed_data, columns=result_column_list)
 
 
-# TODO: Still testing this clas
 class NeuralNetwork(nn.Module):
+    """
+    A feedforward neural network that contains a input layer, hidden layer and an output layer
+    """
     tensor: Tensor = Tensor()
-    fraud_data_frame: pd.DataFrame = pd.DataFrame
-    data_preprocessor: DataPreprocessor = DataPreprocessor(fraud_data_frame=fraud_data_frame)
 
-    def __init__(self):
-        super().__init__()
-        device = torch.device(
+    def __init__(self, input_size: int):
+        super(NeuralNetwork, self).__init__()
+        # Specifies the input_size (default = 8) and the number of nodes in the output layer (8)
+        self.input_layer = nn.Linear(input_size, 8)
+        # Indicates that after the input layer is completed the ReLU (rectified linear unit)
+        # activation function is being called on the first hidden layer's nodes
+        self.relu1 = nn.ReLU()
+        # Second hidden layer indicating that the number of input nodes is 10 and the number of output nodes is 5
+        self.hidden_layer = nn.Linear(8, 5)
+        self.relu2 = nn.ReLU()  # ReLU (rectified linear unit) used again on the hidden layer
+        self.output_layer = nn.Linear(5, 1)  # Output layer consisting of a single node
+        # Applying a sigmoid function on the output layer to retrieve a probability from the output node
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, tensor_obj: Tensor) -> Tensor:
+        input_layer: Tensor = self.relu1(self.input_layer(tensor_obj))
+        hidden_layer: Tensor = self.relu2(self.hidden_layer(input_layer))
+        output_layer: Tensor = self.sigmoid(self.output_layer(hidden_layer))
+        return output_layer
+
+
+@dataclass
+class Model:
+
+    def __init__(self, fraud_data_frame: pd.DataFrame, input_size: int = 8):
+        self.device = self.get_device()
+        self.neural_network = NeuralNetwork(input_size).to(self.device)
+        self.criterion = BCELoss()
+        self.optimizer = torch.optim.Adam(self.neural_network.parameters(), lr=0.001)
+        self.fraud_data_frame = fraud_data_frame
+        self.data_preprocessor = DataPreprocessor(fraud_data_frame=self.fraud_data_frame)
+
+    def train_neural_network(self):
+        num_epochs = 10
+        for epoch in tqdm(range(num_epochs)):
+            running_loss:float = 0.0
+            for inputs, labels in self.data_preprocessor.get_tensor_dataset():
+                inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located
+                inputs = inputs.view(inputs.size(0), -1)
+                # labels = labels.to(self.device)
+                # Move tensor labels to same devise the Model is located and convert values to 32-bit
+                labels = labels.to(self.device, dtype=torch.float32)
+                self.optimizer.zero_grad()  # Zero the gradients as we are going through a new interation
+                outputs = self.neural_network(inputs)  # Forward pass through the neural network
+                loss = self.criterion(outputs, labels)  # Compute the loss function based of BCELoss
+                loss.backward()  # Backward pass (compute gradients) altering the weights and biases
+                self.optimizer.step()  # Update parameters
+                running_loss += loss.item()
+            epoch_loss:float = running_loss / len(self.data_preprocessor.get_tensor_dataset())
+            logger.info(f'Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}')
+
+    @staticmethod
+    def get_device() -> device:
+        device_used: torch.device = torch.device(
             Constants.CUDA
             if torch.cuda.is_available()
             else Constants.MPS
             if torch.backends.mps.is_available()
             else Constants.CPU
         )
-        tensor = self.tensor.to(device)
-        logger.info(f"Using {device} device")
-        # Creates the input layer of the neural network: self.data_preprocessor.get_x_labels_as_tensor().shape[1] (4)
-        # and specifies the number of output nodes in the following hidden layer (10)
-        self.fc1 = nn.Linear(self.data_preprocessor.get_x_labels_as_tensor().shape[1], 10)
-        # Following hidden layer
-        self.fc2 = nn.Linear(10, 5)
-        # Output layer
-        self.fc3 = nn.Linear(5, 1)
+
+        logger.info(f"Using {device_used} device")
+
+        return device_used

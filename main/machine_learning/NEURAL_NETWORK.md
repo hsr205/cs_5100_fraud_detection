@@ -123,10 +123,10 @@ def main() -> int:
 
 ---
 
-| Model Num | Num Input Layer Nodes | Num Hidden Layer Nodes | Num Output Layer Nodes  |      Criterion       | Optimizer | Learning Rate |  Num Epochs  |    Loss Function Result After Epochs    |
-|:---------:|:---------------------:|:----------------------:|:-----------------------:|:--------------------:|:---------:|:-------------:|:------------:|:---------------------------------------:|
-|     1     |           8           |           5            |            1            | Binary Cross Entropy |   Adam    |     0.001     |      10      |                 0.0058                  |
-|           |                       |                        |                         |                      |           |               |              |                                         |
+| Model Num | Num Input Layer Nodes | Num Hidden Layer Nodes | Num Output Layer Nodes  |      Criterion       | Optimizer | Learning Rate |  Num Epochs  | Loss Function Result After N-Epochs |
+|:---------:|:---------------------:|:----------------------:|:-----------------------:|:--------------------:|:---------:|:-------------:|:------------:|:-----------------------------------:|
+|     1     |           8           |           5            |            1            | Binary Cross Entropy |   Adam    |     0.001     |      10      |               0.0058                |
+|           |                       |                        |                         |                      |           |               |              |                                     |
 
 
 ---

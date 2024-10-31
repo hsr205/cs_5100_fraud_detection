@@ -147,7 +147,7 @@ class Model:
     def train_neural_network(self):
         num_epochs = 10
         for epoch in tqdm(range(num_epochs)):
-            running_loss:float = 0.0
+            running_loss: float = 0.0
             for inputs, labels in self.data_preprocessor.get_tensor_dataset():
                 inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located
                 inputs = inputs.view(inputs.size(0), -1)
@@ -160,7 +160,7 @@ class Model:
                 loss.backward()  # Backward pass (compute gradients) altering the weights and biases
                 self.optimizer.step()  # Update parameters
                 running_loss += loss.item()
-            epoch_loss:float = running_loss / len(self.data_preprocessor.get_tensor_dataset())
+            epoch_loss: float = running_loss / len(self.data_preprocessor.get_tensor_dataset())
             logger.info(f'Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}')
 
     @staticmethod

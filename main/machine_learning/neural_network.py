@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import sys
 import os
+import time
 
 # adding path to sys for local module imports
 sys.path.append(os.path.join(os.getcwd(),"main"))
@@ -121,37 +122,39 @@ class NeuralNetwork(nn.Module):
     A feedforward neural network that contains an input layer, hidden layer and an output layer
     """
     tensor: Tensor = Tensor()
-
-    def __init__(self, input_size: int):
+    def __init__(self, input_size: int, hidden_input_size : int, hidden_output_size : int):
         super(NeuralNetwork, self).__init__()
-        # dropout layer, will randomly zero an element of the input tensor with probability 0.01
-        # self.dropout = nn.Dropout(0.01)
+        # dropout layer, will randomly zero an element of the input tensor with probability 0.2
+        self.dropout = nn.Dropout(0.2)
         # Specifies the input_size (default = 8) and the number of nodes in the output layer (8)
-        self.input_layer = nn.Linear(input_size, 8)
+        self.input_layer = nn.Linear(input_size, hidden_input_size)
         # Indicates that after the input layer is completed the ReLU (rectified linear unit)
         # activation function is being called on the first hidden layer's nodes
         self.relu1 = nn.ReLU()
         # Second hidden layer indicating that the number of input nodes is 10 and the number of output nodes is 5
-        self.hidden_layer = nn.Linear(8, 5)
+        self.hidden_layer = nn.Linear(hidden_input_size, hidden_output_size)
+        # a second dropout layer, will randomly zero a hidden neuron probability 0.5
+        self.dropout = nn.Dropout(0.5)
         self.relu2 = nn.ReLU()  # ReLU (rectified linear unit) used again on the hidden layer
-        self.output_layer = nn.Linear(5, 1)  # Output layer consisting of a single node
+        self.output_layer = nn.Linear(hidden_output_size, 1)  # Output layer consisting of a single node
         # Applying a sigmoid function on the output layer to retrieve a probability from the output node
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, tensor_obj: Tensor) -> Tensor:
-        # drop_out_layer: Tensor = self.dropout(tensor_obj)
-        input_layer: Tensor = self.relu1(self.input_layer(tensor_obj))
+        drop_out_layer1: Tensor = self.dropout(tensor_obj)
+        input_layer: Tensor = self.relu1(self.input_layer(drop_out_layer1))
         hidden_layer: Tensor = self.relu2(self.hidden_layer(input_layer))
-        output_layer: Tensor = self.sigmoid(self.output_layer(hidden_layer))
+        drop_out_layer2: Tensor = self.dropout(hidden_layer)
+        output_layer: Tensor = self.sigmoid(self.output_layer(drop_out_layer2))
         return output_layer
 
 
 @dataclass
 class Model:
 
-    def __init__(self, fraud_data_frame: pd.DataFrame, input_size: int = 8):
+    def __init__(self, fraud_data_frame: pd.DataFrame, input_size: int = 8, hidden_input_size : int = 8 , hidden_output_size : int = 5 ):
         self.device = self.get_device()
-        self.neural_network = NeuralNetwork(input_size).to(self.device)
+        self.neural_network = NeuralNetwork(input_size, hidden_input_size, hidden_output_size).to(self.device)
         self.criterion = BCELoss()
         self.optimizer = torch.optim.Adam(self.neural_network.parameters(), lr=0.001)
         self.fraud_data_frame = fraud_data_frame
@@ -160,7 +163,7 @@ class Model:
     def train_neural_network(self) -> None:
         writer = SummaryWriter(os.path.join(os.getcwd(),"runs"))
         num_epochs = 10
-        for epoch in tqdm(range(num_epochs)):
+        for epoch in tqdm(range(num_epochs), "training neural network "):
             running_loss: float = 0.0
             for inputs, labels in self.data_preprocessor.get_tensor_dataset():
                 inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located
@@ -170,13 +173,14 @@ class Model:
                 self.optimizer.zero_grad()  # Zero the gradients as we are going through a new interation
                 outputs = self.neural_network(inputs)  # Forward pass through the neural network
                 loss = self.criterion(outputs, labels)  # Compute the loss function based of BCELoss
-                writer.add_scalar("Loss/train", loss, epoch) # pass the current loss to the writer
+                writer.add_scalar("Loss/train", running_loss, epoch) # pass the current loss to the writer
                 loss.backward()  # Backward pass (compute gradients) altering the weights and biases
                 self.optimizer.step()  # Update parameters
                 running_loss += loss.item()
             epoch_loss: float = running_loss / len(self.data_preprocessor.get_tensor_dataset())
             writer.flush()
             logger.info(f'Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}')
+            torch.save(NeuralNetwork._save_to_state_dict, f"model{time.time}.pth")
         writer.close()
 
     @staticmethod

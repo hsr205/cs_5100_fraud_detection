@@ -14,10 +14,6 @@ from tqdm import tqdm
 
 logger: Logger = Logger().get_logger()
 
-"""
-We define our neural network by subclassing nn.Module
-"""
-
 
 class DataPreprocessor:
     random_seed: int = 42
@@ -27,6 +23,13 @@ class DataPreprocessor:
         self.fraud_data_frame = fraud_data_frame
 
     def get_tensor_dataset(self, batch_size: int = 32):
+        """
+        Combines the x-features / y-labels of the data set into a single DataLoader object
+
+        :param batch_size: The size of the inputs to inject into the one at one time
+        :return: a DataLoader object that is compatible with the PyTorch framework for model creation
+        """
+
         features: Tensor = self.get_x_labels_as_tensor()
         outputs: Tensor = self.get_y_labels_as_tensor()
         dataset: TensorDataset = TensorDataset(features, outputs)
@@ -144,7 +147,7 @@ class Model:
         self.fraud_data_frame = fraud_data_frame
         self.data_preprocessor = DataPreprocessor(fraud_data_frame=self.fraud_data_frame)
 
-    def train_neural_network(self):
+    def train_neural_network(self) -> None:
         num_epochs = 10
         for epoch in tqdm(range(num_epochs)):
             running_loss: float = 0.0
@@ -164,6 +167,11 @@ class Model:
 
     @staticmethod
     def get_device() -> device:
+        """
+        Assigns the device the model with run on
+
+        :return: the device the machine as chosen to run the model on (can be CUDA, MPS or CPU)
+        """
         device_used: torch.device = torch.device(
             Constants.CUDA
             if torch.cuda.is_available()

@@ -6,7 +6,6 @@ from logger import Logger
 
 logger: Logger = Logger().get_logger()
 
-
 class FraudDataset(Dataset):
 
     def __init__(self, data_loader: Any, file_path: str, file_name: str, transform_to_tensor=None,

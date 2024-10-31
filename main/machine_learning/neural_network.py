@@ -1,5 +1,11 @@
 from dataclasses import dataclass
 
+import sys
+import os
+
+# adding path to sys for local module imports
+sys.path.append(os.path.join(os.getcwd(),"main"))
+
 import pandas as pd
 import torch
 from logger import Logger
@@ -11,6 +17,7 @@ from torch.nn import BCELoss
 from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
 from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 logger: Logger = Logger().get_logger()
 
@@ -111,12 +118,14 @@ class DataPreprocessor:
 
 class NeuralNetwork(nn.Module):
     """
-    A feedforward neural network that contains a input layer, hidden layer and an output layer
+    A feedforward neural network that contains an input layer, hidden layer and an output layer
     """
     tensor: Tensor = Tensor()
 
     def __init__(self, input_size: int):
         super(NeuralNetwork, self).__init__()
+        # dropout layer, will randomly zero an element of the input tensor with probability 0.01
+        # self.dropout = nn.Dropout(0.01)
         # Specifies the input_size (default = 8) and the number of nodes in the output layer (8)
         self.input_layer = nn.Linear(input_size, 8)
         # Indicates that after the input layer is completed the ReLU (rectified linear unit)
@@ -130,6 +139,7 @@ class NeuralNetwork(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, tensor_obj: Tensor) -> Tensor:
+        # drop_out_layer: Tensor = self.dropout(tensor_obj)
         input_layer: Tensor = self.relu1(self.input_layer(tensor_obj))
         hidden_layer: Tensor = self.relu2(self.hidden_layer(input_layer))
         output_layer: Tensor = self.sigmoid(self.output_layer(hidden_layer))
@@ -148,6 +158,7 @@ class Model:
         self.data_preprocessor = DataPreprocessor(fraud_data_frame=self.fraud_data_frame)
 
     def train_neural_network(self) -> None:
+        writer = SummaryWriter(os.path.join(os.getcwd(),"runs"))
         num_epochs = 10
         for epoch in tqdm(range(num_epochs)):
             running_loss: float = 0.0
@@ -159,11 +170,14 @@ class Model:
                 self.optimizer.zero_grad()  # Zero the gradients as we are going through a new interation
                 outputs = self.neural_network(inputs)  # Forward pass through the neural network
                 loss = self.criterion(outputs, labels)  # Compute the loss function based of BCELoss
+                writer.add_scalar("Loss/train", loss, epoch) # pass the current loss to the writer
                 loss.backward()  # Backward pass (compute gradients) altering the weights and biases
                 self.optimizer.step()  # Update parameters
                 running_loss += loss.item()
             epoch_loss: float = running_loss / len(self.data_preprocessor.get_tensor_dataset())
+            writer.flush()
             logger.info(f'Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}')
+        writer.close()
 
     @staticmethod
     def get_device() -> device:

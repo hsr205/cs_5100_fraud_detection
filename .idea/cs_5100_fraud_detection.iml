@@ -5,7 +5,14 @@
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.12 (cs_5100_fraud_detection)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="FraudProject" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="PyNamespacePackagesService">
+    <option name="namespacePackageFolders">
+      <list>
+        <option value="$MODULE_DIR$/main" />
+      </list>
+    </option>
   </component>
 </module>

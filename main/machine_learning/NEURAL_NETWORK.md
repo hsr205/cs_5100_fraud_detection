@@ -29,7 +29,7 @@ with regard to the specific approaches used within our neural network.
 ---
 
 
-`__init__()` - ADD DESCRIPTION
+`__init__()` - 
 
 `preprocess_data_frame()` - ADD DESCRIPTION
 

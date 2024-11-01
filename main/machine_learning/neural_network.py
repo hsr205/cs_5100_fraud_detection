@@ -195,6 +195,8 @@ class Model:
             for epoch, loss in enumerate(epoch_loss_list):
                 writer.add_scalar("Loss/train", loss, epoch)
 
+        logger.info(f"Saved neural network execution results: {output_directory_path}")
+
     def save_model_state(self) -> None:
         """
         Saves neural network training results to a specified file
@@ -206,6 +208,15 @@ class Model:
         file_name: str = f"model_{current_date_time}.pth"
         full_output_path: str = str(output_directory_path / file_name)
         torch.save(self.neural_network.state_dict(), full_output_path)
+        logger.info(f"Saved neural network state: {full_output_path}")
+
+    @staticmethod
+    def launch_tensor_board() -> None:
+        """
+        Used in to launch TensorBoard, a tool for visualizing machine learning metrics from our neural network output
+        """
+        logger.info("Launching TensorBoard")
+        os.system("tensorboard --logdir=runs")
 
     @staticmethod
     def get_device() -> device:
@@ -222,7 +233,7 @@ class Model:
             else Constants.CPU
         )
 
-        device_str:str = str(device_used).upper()
+        device_str: str = str(device_used).upper()
         logger.info(f"Using {device_str} Device")
 
         return device_used

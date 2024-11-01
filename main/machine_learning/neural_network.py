@@ -215,7 +215,7 @@ class Model:
         """
         Used in to launch TensorBoard, a tool for visualizing machine learning metrics from our neural network output
         """
-        logger.info("Launching TensorBoard")
+        logger.info("Launching TensorBoard:")
         os.system("tensorboard --logdir=runs")
 
     @staticmethod

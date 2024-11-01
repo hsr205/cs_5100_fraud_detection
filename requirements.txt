@@ -4,3 +4,5 @@ scikit-learn~=1.5.2
 matplotlib~=3.9.2
 seaborn~=0.13.2
 tqdm~=4.66.6
+tensorboard~=2.18.0
+tensorboard-data-server~=0.7.2

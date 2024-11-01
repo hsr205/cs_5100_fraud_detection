@@ -165,7 +165,7 @@ class Model:
     def train_neural_network(self) -> list[float]:
         num_epochs = 10
         epoch_loss_list: list[float] = []
-        for epoch in tqdm(range(num_epochs), "training neural network "):
+        for epoch in tqdm(range(num_epochs), "Neural Network Training Progress"):
             running_loss: float = 0.0
             for inputs, labels in self.data_preprocessor.get_tensor_dataset():
                 inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located

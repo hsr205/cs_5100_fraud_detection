@@ -1,11 +1,10 @@
-from dataclasses import dataclass
-
-import sys
 import os
-import time
+import sys
+from dataclasses import dataclass
+from datetime import datetime
 
 # adding path to sys for local module imports
-sys.path.append(os.path.join(os.getcwd(),"main"))
+sys.path.append(os.path.join(os.getcwd(), "main"))
 
 import pandas as pd
 import torch
@@ -19,6 +18,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
+from pathlib import Path
 
 logger: Logger = Logger().get_logger()
 
@@ -122,7 +122,8 @@ class NeuralNetwork(nn.Module):
     A feedforward neural network that contains an input layer, hidden layer and an output layer
     """
     tensor: Tensor = Tensor()
-    def __init__(self, input_size: int, hidden_input_size : int, hidden_output_size : int):
+
+    def __init__(self, input_size: int, hidden_input_size: int, hidden_output_size: int):
         super(NeuralNetwork, self).__init__()
         # dropout layer, will randomly zero an element of the input tensor with probability 0.2
         self.dropout = nn.Dropout(0.2)
@@ -152,7 +153,8 @@ class NeuralNetwork(nn.Module):
 @dataclass
 class Model:
 
-    def __init__(self, fraud_data_frame: pd.DataFrame, input_size: int = 8, hidden_input_size : int = 8 , hidden_output_size : int = 5 ):
+    def __init__(self, fraud_data_frame: pd.DataFrame, input_size: int = 8, hidden_input_size: int = 8,
+                 hidden_output_size: int = 5):
         self.device = self.get_device()
         self.neural_network = NeuralNetwork(input_size, hidden_input_size, hidden_output_size).to(self.device)
         self.criterion = BCELoss()
@@ -160,9 +162,9 @@ class Model:
         self.fraud_data_frame = fraud_data_frame
         self.data_preprocessor = DataPreprocessor(fraud_data_frame=self.fraud_data_frame)
 
-    def train_neural_network(self) -> None:
-        writer = SummaryWriter(os.path.join(os.getcwd(),"runs"))
+    def train_neural_network(self) -> list[float]:
         num_epochs = 10
+        epoch_loss_list: list[float] = []
         for epoch in tqdm(range(num_epochs), "training neural network "):
             running_loss: float = 0.0
             for inputs, labels in self.data_preprocessor.get_tensor_dataset():
@@ -173,15 +175,37 @@ class Model:
                 self.optimizer.zero_grad()  # Zero the gradients as we are going through a new interation
                 outputs = self.neural_network(inputs)  # Forward pass through the neural network
                 loss = self.criterion(outputs, labels)  # Compute the loss function based of BCELoss
-                writer.add_scalar("Loss/train", running_loss, epoch) # pass the current loss to the writer
                 loss.backward()  # Backward pass (compute gradients) altering the weights and biases
                 self.optimizer.step()  # Update parameters
                 running_loss += loss.item()
             epoch_loss: float = running_loss / len(self.data_preprocessor.get_tensor_dataset())
-            writer.flush()
+            epoch_loss_list.append(epoch_loss)
             logger.info(f'Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}')
-            torch.save(NeuralNetwork._save_to_state_dict, f"model{time.time}.pth")
-        writer.close()
+        return epoch_loss_list
+
+    def write_results(self, epoch_loss_list: list[float]) -> None:
+        """
+        Writes the results of neural network training to a specified log file
+        :param epoch_loss_list: the results of neural network training represented in a list
+        :return: None
+        """
+        output_directory_path: Path = Path.cwd() / "machine_learning" / "neural_neural_execution_results"
+
+        with SummaryWriter(str(output_directory_path)) as writer:
+            for epoch, loss in enumerate(epoch_loss_list):
+                writer.add_scalar("Loss/train", loss, epoch)
+
+    def save_model_state(self) -> None:
+        """
+        Saves neural network training results to a specified file
+        :return: None
+        """
+        output_directory_path: Path = Path.cwd() / "machine_learning" / "model_states"
+        output_directory_path.mkdir(parents=True, exist_ok=True)  # Create the directory if it doesn't exist
+        current_date_time: str = datetime.now().strftime("%Y_%m_%d_%H%M%S")
+        file_name: str = f"model_{current_date_time}.pth"
+        full_output_path: str = str(output_directory_path / file_name)
+        torch.save(self.neural_network.state_dict(), full_output_path)
 
     @staticmethod
     def get_device() -> device:
@@ -198,6 +222,7 @@ class Model:
             else Constants.CPU
         )
 
-        logger.info(f"Using {device_used} device")
+        device_str:str = str(device_used).upper()
+        logger.info(f"Using {device_str} Device")
 
         return device_used

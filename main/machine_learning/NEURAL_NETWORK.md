@@ -105,6 +105,8 @@ def main() -> int:
 
 ## Sample_Execution_Output
 
+---
+
 ```
 2024-11-01 10:01:08 AM - INFO - File found in zip: synthetic_financial_datasets_log.csv
 2024-11-01 10:01:13 AM - INFO - File found in zip: synthetic_financial_datasets_log.csv

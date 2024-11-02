@@ -9,7 +9,6 @@ from machine_learning.neural_network import Model
 
 def main() -> int:
     data_loader: CustomDataLoader = CustomDataLoader()
-
     file_path_to_data: str = str(
         Path.cwd() / "data" / "fraud_detection_data_set" / "synthetic_financial_datasets_log.zip")
     file_name: str = "synthetic_financial_datasets_log.csv"
@@ -22,7 +21,7 @@ def main() -> int:
 
     fraud_data_frame: pd.DataFrame = fraud_data.data_loader.get_data_frame_from_zip_file(file_path=file_path_to_data,
                                                                                          file_name=file_name)
-
+    
     model: Model = Model(fraud_data_frame=fraud_data_frame)
     epoch_loss_list: list[float] = model.train_neural_network()
     model.write_results(epoch_loss_list=epoch_loss_list)

@@ -164,9 +164,10 @@ class Model:
 
     def train_neural_network(self) -> list[float]:
         num_epochs = 10
-        epoch_loss_list: list[float] = []
+        epoch_loss_matrix: list[list[float]] = [[]]
         for epoch in tqdm(range(num_epochs), "Neural Network Training Progress"):
             running_loss: float = 0.0
+            epoch_loss_list = []
             for inputs, labels in self.data_preprocessor.get_tensor_dataset():
                 inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located
                 inputs = inputs.view(inputs.size(0), -1)
@@ -178,23 +179,26 @@ class Model:
                 loss.backward()  # Backward pass (compute gradients) altering the weights and biases
                 self.optimizer.step()  # Update parameters
                 running_loss += loss.item()
+                epoch_loss_list.append(running_loss)
             epoch_loss: float = running_loss / len(self.data_preprocessor.get_tensor_dataset())
-            epoch_loss_list.append(epoch_loss)
+            epoch_loss_matrix.append(epoch_loss_list)
             logger.info(f'Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}')
-        return epoch_loss_list
+        return epoch_loss_matrix
 
-    def write_results(self, epoch_loss_list: list[float]) -> None:
+    def write_results(self, epoch_loss_list: list[list[float]]) -> None:
         """
         Writes the results of neural network training to a specified log file
         :param epoch_loss_list: the results of neural network training represented in a list
         :return: None
         """
-        output_directory_path: Path = Path.cwd() / "machine_learning" / "neural_neural_execution_results"
+        output_directory_path: Path = Path.cwd() / "machine_learning" / "neural_network_execution_results"
 
-        with SummaryWriter(str(output_directory_path)) as writer:
-            for epoch, loss in enumerate(epoch_loss_list):
+        writer = SummaryWriter(log_dir=str(output_directory_path))
+        for epoch in range(len(epoch_loss_list)):
+            for loss in epoch_loss_list[epoch]:
                 writer.add_scalar("Loss/train", loss, epoch)
 
+        writer.close()
         logger.info(f"Saved neural network execution results: {output_directory_path}")
 
     def save_model_state(self) -> None:
@@ -216,7 +220,7 @@ class Model:
         Used in to launch TensorBoard, a tool for visualizing machine learning metrics from our neural network output
         """
         logger.info("Launching TensorBoard:")
-        os.system("tensorboard --logdir=runs")
+        os.system("tensorboard --logdir=main/machine_learning/neural_network_execution_results")
 
     @staticmethod
     def get_device() -> device:

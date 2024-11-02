@@ -64,9 +64,15 @@ with regard to the specific approaches used within our neural network.
 
 `__init__()` - ADD DESCRIPTION
 
-`train_neural_network()` - ADD DESCRIPTION
+`train_neural_network()` - will train the neural network and return a list of lists called epoch_loss_matrix. The list at position k will be contain the running loss for the kth epoch. 
 
-`get_device()` - ADD DESCRIPTION
+`get_device()` - will check to see if cuda is available and if so move the model tensor to the available GPU
+
+`write_results()` - using the takes the results of the most recent model training and stores it in a 
+
+`save_model_state()` - saves the model weights as a dictionary stored in a .pth file to be used later
+
+`launch_tensor_board()` - will launch tensor board at the local host http://localhost:6006/ where the loss function over time of all runs found in main/machine_learning/neural_network_execution_results
 
 ---
 

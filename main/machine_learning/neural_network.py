@@ -25,26 +25,26 @@ logger: Logger = Logger().get_logger()
 
 class DataPreprocessor:
     random_seed: int = 42
-    sample_size: int = 100000
 
     def __init__(self, fraud_data_frame: pd.DataFrame):
         self.fraud_data_frame = fraud_data_frame
 
-    def get_tensor_dataset(self, batch_size: int = 32):
+    def get_tensor_dataset(self, num_observations: int, batch_size: int = 64):
         """
         Combines the x-features / y-labels of the data set into a single DataLoader object
 
+        :param num_observations: Number of observations from the original dataset to include in tensor object
         :param batch_size: The size of the inputs to inject into the one at one time
         :return: a DataLoader object that is compatible with the PyTorch framework for model creation
         """
 
-        features: Tensor = self.get_x_labels_as_tensor()
-        outputs: Tensor = self.get_y_labels_as_tensor()
+        features: Tensor = self.get_x_labels_as_tensor(num_observations=num_observations)
+        outputs: Tensor = self.get_y_labels_as_tensor(num_observations=num_observations)
         dataset: TensorDataset = TensorDataset(features, outputs)
         dataloader: DataLoader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         return dataloader
 
-    def get_y_labels_as_tensor(self) -> Tensor:
+    def get_y_labels_as_tensor(self, num_observations: int) -> Tensor:
         """
         Retrieves the isFraud column (series) and takes a predefined sample size (100,000 observations).
         Converts the isFraud series to a tensor object.
@@ -52,7 +52,7 @@ class DataPreprocessor:
         :return: a tensor object that will be fed as labels ('y' values) to the neural network (model)
         """
 
-        data_series: pd.Series = self.fraud_data_frame[Constants.IS_FRAUD].sample(n=self.sample_size,
+        data_series: pd.Series = self.fraud_data_frame[Constants.IS_FRAUD].sample(n=num_observations,
                                                                                   random_state=self.random_seed)
 
         # We convert the row vector in a column vector in order to ensure that
@@ -61,7 +61,7 @@ class DataPreprocessor:
 
         return tensor
 
-    def get_x_labels_as_tensor(self) -> Tensor:
+    def get_x_labels_as_tensor(self, num_observations: int) -> Tensor:
         """
         Retrieves the all feature columns ('x' values) and takes a predefined sample size (100,000 observations).
         Converts the feature columns to a tensor object.
@@ -69,13 +69,13 @@ class DataPreprocessor:
         :return: a tensor object that will be fed as features ('x' values) to the neural network (model)
         """
 
-        data_frame: pd.DataFrame = self.preprocess_data_frame()
+        data_frame: pd.DataFrame = self.preprocess_data_frame(num_observations=num_observations)
 
         tensor = torch.tensor(data_frame.values, dtype=torch.float32)
 
         return tensor
 
-    def preprocess_data_frame(self) -> pd.DataFrame:
+    def preprocess_data_frame(self, num_observations: int) -> pd.DataFrame:
         """
 
         Takes a 'random' sample of size "sample_size" (defaulted is 100,000) observations
@@ -91,7 +91,7 @@ class DataPreprocessor:
                                   Constants.NEW_TRANSACTION_BALANCE,
                                   Constants.NEW_RECIPIENT_BALANCE]
 
-        data_frame: pd.DataFrame = self.fraud_data_frame[column_list].sample(n=self.sample_size,
+        data_frame: pd.DataFrame = self.fraud_data_frame[column_list].sample(n=num_observations,
                                                                              random_state=self.random_seed)
 
         # Specifies the transformations each column needs to undergo
@@ -162,13 +162,17 @@ class Model:
         self.fraud_data_frame = fraud_data_frame
         self.data_preprocessor = DataPreprocessor(fraud_data_frame=self.fraud_data_frame)
 
-    def train_neural_network(self) -> list[float]:
+    def train_neural_network(self, num_observations: int, batch_size: int = 64) -> list[list[float]]:
         num_epochs = 10
         epoch_loss_matrix: list[list[float]] = [[]]
+        logger.info(f"Batch Size: {batch_size}")
+        logger.info(f"Number of Data Set Observations Used: {num_observations:,}")
+        logger.info("===============================================")
         for epoch in tqdm(range(num_epochs), "Neural Network Training Progress"):
             running_loss: float = 0.0
             epoch_loss_list = []
-            for inputs, labels in self.data_preprocessor.get_tensor_dataset():
+            for inputs, labels in self.data_preprocessor.get_tensor_dataset(num_observations=num_observations,
+                                                                            batch_size=batch_size):
                 inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located
                 inputs = inputs.view(inputs.size(0), -1)
                 # Move tensor labels to same devise the Model is located and convert values to 32-bit
@@ -180,7 +184,7 @@ class Model:
                 self.optimizer.step()  # Update parameters
                 running_loss += loss.item()
                 epoch_loss_list.append(running_loss)
-            epoch_loss: float = running_loss / len(self.data_preprocessor.get_tensor_dataset())
+            epoch_loss: float = running_loss / (num_observations / batch_size)
             epoch_loss_matrix.append(epoch_loss_list)
             logger.info(f'Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}')
         return epoch_loss_matrix

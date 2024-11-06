@@ -10,7 +10,7 @@ from machine_learning.neural_network import Model
 def main() -> int:
     data_loader: CustomDataLoader = CustomDataLoader()
     file_path_to_data: str = str(
-        Path.cwd() / "data" / "fraud_detection_data_set" / "synthetic_financial_datasets_log.zip")
+    Path.cwd() / "data" / "fraud_detection_data_set" / "synthetic_financial_datasets_log.zip")
     file_name: str = "synthetic_financial_datasets_log.csv"
 
     fraud_data: FraudDataset = FraudDataset(data_loader=data_loader,
@@ -21,7 +21,6 @@ def main() -> int:
 
     fraud_data_frame: pd.DataFrame = fraud_data.data_loader.get_data_frame_from_zip_file(file_path=file_path_to_data,
                                                                                          file_name=file_name)
-
     batch_size: int = 128
     num_observations: int = 500000
 

@@ -224,7 +224,8 @@ class Model:
         Used in to launch TensorBoard, a tool for visualizing machine learning metrics from our neural network output
         """
         logger.info("Launching TensorBoard:")
-        os.system("tensorboard --logdir=main/machine_learning/neural_network_execution_results")
+        output_directory_path: Path = Path.cwd() / "machine_learning" / "neural_network_execution_results"
+        os.system("tensorboard --logdir=" + str(output_directory_path))
 
     @staticmethod
     def get_device() -> device:

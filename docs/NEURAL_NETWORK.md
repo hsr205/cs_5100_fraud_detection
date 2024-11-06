@@ -29,13 +29,13 @@ with regard to the specific approaches used within our neural network.
 ---
 
 
-`__init__()` -
+`__init__()` - Initializes the DataTransformer with a DataFrame, setting it up for further transformations and tensor conversions.
 
-`preprocess_data_frame()` - ADD DESCRIPTION
+`preprocess_data_frame()` -  Applies various preprocessing steps to the DataFrame, including dropping columns, mapping values, standardization, feature creation, quantile transformation, and saving the final DataFrame
 
-`get_y_labels_as_tensor()` - ADD DESCRIPTION
+`get_y_labels_as_tensor()` - Extracts and converts the isFraud column (target labels) into a PyTorch tensor for use in model training.
 
-`get_x_labels_as_tensor()` - ADD DESCRIPTION
+`get_x_labels_as_tensor()` - Extracts all feature columns (excluding isFraud) and converts them into a PyTorch tensor, preparing the data for model input.
 
 
 ---

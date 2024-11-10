@@ -3,9 +3,11 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from logger import Logger
+# from logger import Logger
 from matplotlib import ticker
-from static.constants import Constants
+# from static.constants import Constants
+from ..logger import Logger
+from ..main import Constants
 
 logger: Logger = Logger().get_logger()
 

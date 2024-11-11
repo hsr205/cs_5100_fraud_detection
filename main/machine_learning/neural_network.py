@@ -38,6 +38,8 @@ class DataPreprocessor:
         :return: a DataLoader object that is compatible with the PyTorch framework for model creation
         """
 
+        # TODO: Add logger statement displaying the number of observations
+        #       that are valid transactions and those that are fraud
         features: Tensor = self.get_x_labels_as_tensor(num_observations=num_observations)
         outputs: Tensor = self.get_y_labels_as_tensor(num_observations=num_observations)
         dataset: TensorDataset = TensorDataset(features, outputs)
@@ -117,6 +119,8 @@ class DataPreprocessor:
         return pd.DataFrame(processed_data, columns=result_column_list)
 
 
+# TODO: Look at the issue of overfitting, add F1-Score
+#       Also split data into training and test sets (70% - 30%)
 class NeuralNetwork(nn.Module):
     """
     A feedforward neural network that contains an input layer, hidden layer and an output layer

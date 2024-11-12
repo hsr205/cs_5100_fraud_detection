@@ -137,21 +137,25 @@ class NeuralNetwork(nn.Module):
     """
     tensor: Tensor = Tensor()
 
-    def __init__(self, input_size: int, hidden_input_size: int, hidden_output_size: int):
+    input_size: int = 8
+    hidden_input_size: int = 8
+    hidden_output_size: int = 5
+
+    def __init__(self):
         super(NeuralNetwork, self).__init__()
         # dropout layer, will randomly zero an element of the input tensor with probability 0.2
         self.dropout = nn.Dropout(0.2)
         # Specifies the input_size (default = 8) and the number of nodes in the output layer (8)
-        self.input_layer = nn.Linear(input_size, hidden_input_size)
+        self.input_layer = nn.Linear(self.input_size, self.hidden_input_size)
         # Indicates that after the input layer is completed the ReLU (rectified linear unit)
         # activation function is being called on the first hidden layer's nodes
         self.relu1 = nn.ReLU()
         # Second hidden layer indicating that the number of input nodes is 10 and the number of output nodes is 5
-        self.hidden_layer = nn.Linear(hidden_input_size, hidden_output_size)
+        self.hidden_layer = nn.Linear(self.hidden_input_size, self.hidden_output_size)
         # a second dropout layer, will randomly zero a hidden neuron probability 0.5
         self.dropout = nn.Dropout(0.5)
         self.relu2 = nn.ReLU()  # ReLU (rectified linear unit) used again on the hidden layer
-        self.output_layer = nn.Linear(hidden_output_size, 1)  # Output layer consisting of a single node
+        self.output_layer = nn.Linear(self.hidden_output_size, 1)  # Output layer consisting of a single node
 
     def forward(self, tensor_obj: Tensor) -> Tensor:
         drop_out_layer1: Tensor = self.dropout(tensor_obj)
@@ -165,10 +169,9 @@ class NeuralNetwork(nn.Module):
 @dataclass
 class Model:
 
-    def __init__(self, fraud_data_frame: pd.DataFrame, input_size: int = 8, hidden_input_size: int = 8,
-                 hidden_output_size: int = 5):
+    def __init__(self, fraud_data_frame: pd.DataFrame):
         self.device = self.get_device()
-        self.neural_network = NeuralNetwork(input_size, hidden_input_size, hidden_output_size).to(self.device)
+        self.neural_network = NeuralNetwork().to(self.device)
         self.criterion = BCELoss()
         self.optimizer = torch.optim.Adam(self.neural_network.parameters(), lr=0.001)
         self.fraud_data_frame = fraud_data_frame

@@ -10,7 +10,7 @@ from machine_learning.neural_network import Model
 def main() -> int:
     data_loader: CustomDataLoader = CustomDataLoader()
     file_path_to_data: str = str(
-    Path.cwd() / "data" / "fraud_detection_data_set" / "synthetic_financial_datasets_log.zip")
+        Path.cwd() / "data" / "fraud_detection_data_set" / "synthetic_financial_datasets_log.zip")
     file_name: str = "synthetic_financial_datasets_log.csv"
 
     fraud_data: FraudDataset = FraudDataset(data_loader=data_loader,
@@ -28,6 +28,7 @@ def main() -> int:
     epoch_loss_list: list[list[float]] = model.train_neural_network(num_observations=num_observations,
                                                                     batch_size=batch_size)
     model.write_results(epoch_loss_list=epoch_loss_list)
+    model.test_neural_network()
     model.save_model_state()
     model.launch_tensor_board()
     return 0

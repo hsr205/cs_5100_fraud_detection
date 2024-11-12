@@ -213,7 +213,7 @@ class Model:
 
         return epoch_loss_matrix
 
-    # TODO: This method is in progress - Henry to complete
+    # TODO: This method is in progress - Henry or Pablo to complete
     def test_neural_network(self) -> float:
 
         result_float: float = 0.0
@@ -232,22 +232,28 @@ class Model:
         correctly_predicted_observations: int = 0
         total_observations: int = 0
 
-        with torch.no_grad():  # since we're not training, we don't need to calculate the gradients for our outputs
-            for data in tqdm(test_loader):
+        neural_network_obj: NeuralNetwork = NeuralNetwork()
+
+        neural_network_obj.eval()
+
+        with torch.no_grad():
+            for data in tqdm(test_loader, "Neural Network Testing Progress"):
                 tensor, target_tensor = data
 
-                neural_network_output = NeuralNetwork(tensor)
+                neural_network_output = neural_network_obj(tensor)
                 _, predicted_values = torch.max(neural_network_output, 1)
 
                 correctly_predicted_observations += (predicted_values == target_tensor).sum().item()
                 total_observations += target_tensor.size(0)
 
-        # logger.info("==============================================")
-        # logger.info('Neural Network Accuracy: ', correctly_predicted_observations / total_observations)
-        # logger.info("==============================================")
-        #
-        # logger.info("Completed Neural Network Testing")
-        # logger.info("==============================================")
+        logger.info("==============================================")
+        logger.info(f"Total Observations = {total_observations:,}")
+        logger.info(f"Correctly Predicted Observations = {correctly_predicted_observations:,}")
+        logger.info(f'Neural Network Accuracy: {correctly_predicted_observations / total_observations}')
+        logger.info("==============================================")
+
+        logger.info("Completed Neural Network Testing")
+        logger.info("==============================================")
 
         return result_float
 

@@ -213,6 +213,7 @@ class Model:
 
         return epoch_loss_matrix
 
+    # TODO: This method is in progress - Henry to complete
     def test_neural_network(self) -> float:
 
         result_float: float = 0.0

@@ -29,7 +29,7 @@ class DataPreprocessor:
     def __init__(self, fraud_data_frame: pd.DataFrame):
         self.fraud_data_frame = fraud_data_frame
 
-    def get_tensor_dataset(self, num_observations: int, batch_size: int = 64) -> DataLoader:
+    def get_training_dataset(self, num_observations: int, batch_size: int = 64) -> DataLoader:
         """
         Combines the x-features / y-labels of the data set into a single DataLoader object
 
@@ -38,8 +38,6 @@ class DataPreprocessor:
         :return: a DataLoader object that is compatible with the PyTorch framework for model creation
         """
 
-        # TODO: Add logger statement displaying the number of observations
-        #       that are valid transactions and those that are fraud
         features: Tensor = self.get_x_labels_as_tensor(num_observations=num_observations)
         outputs: Tensor = self.get_y_labels_as_tensor(num_observations=num_observations)
         dataset: TensorDataset = TensorDataset(features, outputs)
@@ -178,12 +176,12 @@ class Model:
         logger.info(f"Number of Data Set Observations Used: {num_observations:,}")
         logger.info("===============================================")
 
-        tensor_dataset: DataLoader = self.data_preprocessor.get_tensor_dataset(num_observations=num_observations,
-                                                                               batch_size=batch_size)
+        training_dataset: DataLoader = self.data_preprocessor.get_training_dataset(num_observations=num_observations,
+                                                                                   batch_size=batch_size)
         for epoch in tqdm(range(num_epochs), "Neural Network Training Progress"):
             running_loss: float = 0.0
             epoch_loss_list = []
-            for inputs, labels in tensor_dataset:
+            for inputs, labels in training_dataset:
                 inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located
                 inputs = inputs.view(inputs.size(0), -1)
                 # Move tensor labels to same devise the Model is located and convert values to 32-bit

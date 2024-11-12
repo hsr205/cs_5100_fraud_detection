@@ -29,7 +29,7 @@ class DataPreprocessor:
     def __init__(self, fraud_data_frame: pd.DataFrame):
         self.fraud_data_frame = fraud_data_frame
 
-    def get_tensor_dataset(self, num_observations: int, batch_size: int = 64):
+    def get_tensor_dataset(self, num_observations: int, batch_size: int = 64) -> DataLoader:
         """
         Combines the x-features / y-labels of the data set into a single DataLoader object
 
@@ -56,6 +56,13 @@ class DataPreprocessor:
 
         data_series: pd.Series = self.fraud_data_frame[Constants.IS_FRAUD].sample(n=num_observations,
                                                                                   random_state=self.random_seed)
+
+        count_fraudulent_transactions: int = data_series.value_counts().get(1, 0)
+        count_valid_transactions: int = data_series.value_counts().get(0, 1)
+
+        logger.info(f"Valid Transactions In Dataset: {count_valid_transactions:,}")
+        logger.info(f"Fraudulent Transactions In Dataset: {count_fraudulent_transactions:,}")
+        logger.info("===============================================")
 
         # We convert the row vector in a column vector in order to ensure that
         # the shape matches the shape of the model's output tensor
@@ -142,15 +149,13 @@ class NeuralNetwork(nn.Module):
         self.dropout = nn.Dropout(0.5)
         self.relu2 = nn.ReLU()  # ReLU (rectified linear unit) used again on the hidden layer
         self.output_layer = nn.Linear(hidden_output_size, 1)  # Output layer consisting of a single node
-        # Applying a sigmoid function on the output layer to retrieve a probability from the output node
-        self.sigmoid = nn.Sigmoid()
 
     def forward(self, tensor_obj: Tensor) -> Tensor:
         drop_out_layer1: Tensor = self.dropout(tensor_obj)
         input_layer: Tensor = self.relu1(self.input_layer(drop_out_layer1))
         hidden_layer: Tensor = self.relu2(self.hidden_layer(input_layer))
         drop_out_layer2: Tensor = self.dropout(hidden_layer)
-        output_layer: Tensor = self.sigmoid(self.output_layer(drop_out_layer2))
+        output_layer: Tensor = self.output_layer(drop_out_layer2)
         return output_layer
 
 
@@ -172,11 +177,13 @@ class Model:
         logger.info(f"Batch Size: {batch_size}")
         logger.info(f"Number of Data Set Observations Used: {num_observations:,}")
         logger.info("===============================================")
+
+        tensor_dataset: DataLoader = self.data_preprocessor.get_tensor_dataset(num_observations=num_observations,
+                                                                               batch_size=batch_size)
         for epoch in tqdm(range(num_epochs), "Neural Network Training Progress"):
             running_loss: float = 0.0
             epoch_loss_list = []
-            for inputs, labels in self.data_preprocessor.get_tensor_dataset(num_observations=num_observations,
-                                                                            batch_size=batch_size):
+            for inputs, labels in tensor_dataset:
                 inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located
                 inputs = inputs.view(inputs.size(0), -1)
                 # Move tensor labels to same devise the Model is located and convert values to 32-bit

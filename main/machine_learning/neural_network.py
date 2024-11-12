@@ -135,8 +135,6 @@ class NeuralNetwork(nn.Module):
     """
     A feedforward neural network that contains an input layer, hidden layer and an output layer
     """
-    tensor: Tensor = Tensor()
-
     input_size: int = 8
     hidden_input_size: int = 8
     hidden_output_size: int = 5
@@ -214,6 +212,43 @@ class Model:
         logger.info("===============================================")
 
         return epoch_loss_matrix
+
+    def test_neural_network(self) -> float:
+
+        result_float: float = 0.0
+
+        batch_size: int = 128
+        num_observations: int = 100000
+
+        # TODO: Needs to be 30% of total dataset
+        test_loader: DataLoader = self.data_preprocessor.get_random_dataset(num_observations=num_observations,
+                                                                            batch_size=batch_size,
+                                                                            random_seed=256)
+
+        logger.info("Starting Neural Network Testing")
+        logger.info("===============================================")
+
+        correctly_predicted_observations: int = 0
+        total_observations: int = 0
+
+        with torch.no_grad():  # since we're not training, we don't need to calculate the gradients for our outputs
+            for data in tqdm(test_loader):
+                tensor, target_tensor = data
+
+                neural_network_output = NeuralNetwork(tensor)
+                _, predicted_values = torch.max(neural_network_output, 1)
+
+                correctly_predicted_observations += (predicted_values == target_tensor).sum().item()
+                total_observations += target_tensor.size(0)
+
+        # logger.info("==============================================")
+        # logger.info('Neural Network Accuracy: ', correctly_predicted_observations / total_observations)
+        # logger.info("==============================================")
+        #
+        # logger.info("Completed Neural Network Testing")
+        # logger.info("==============================================")
+
+        return result_float
 
     def write_results(self, epoch_loss_list: list[list[float]]) -> None:
         """

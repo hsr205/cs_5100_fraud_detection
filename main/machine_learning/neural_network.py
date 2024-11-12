@@ -24,36 +24,38 @@ logger: Logger = Logger().get_logger()
 
 
 class DataPreprocessor:
-    random_seed: int = 42
-
     def __init__(self, fraud_data_frame: pd.DataFrame):
         self.fraud_data_frame = fraud_data_frame
 
-    def get_training_dataset(self, num_observations: int, batch_size: int = 64) -> DataLoader:
+    def get_random_dataset(self, num_observations: int, random_seed: int, batch_size: int = 64) -> DataLoader:
         """
         Combines the x-features / y-labels of the data set into a single DataLoader object
 
         :param num_observations: Number of observations from the original dataset to include in tensor object
+        :param random_seed: allows for grabbing a sudo-random selection of observations
         :param batch_size: The size of the inputs to inject into the one at one time
+
         :return: a DataLoader object that is compatible with the PyTorch framework for model creation
         """
 
-        features: Tensor = self.get_x_labels_as_tensor(num_observations=num_observations)
-        outputs: Tensor = self.get_y_labels_as_tensor(num_observations=num_observations)
+        features: Tensor = self.get_x_labels_as_tensor(num_observations=num_observations, random_seed=random_seed)
+        outputs: Tensor = self.get_y_labels_as_tensor(num_observations=num_observations, random_seed=random_seed)
         dataset: TensorDataset = TensorDataset(features, outputs)
         dataloader: DataLoader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         return dataloader
 
-    def get_y_labels_as_tensor(self, num_observations: int) -> Tensor:
+    def get_y_labels_as_tensor(self, num_observations: int, random_seed: int) -> Tensor:
         """
         Retrieves the isFraud column (series) and takes a predefined sample size (100,000 observations).
         Converts the isFraud series to a tensor object.
 
+        :param num_observations: Number of observations from the original dataset to include in tensor object
+        :param random_seed: allows for grabbing a sudo-random selection of observations
         :return: a tensor object that will be fed as labels ('y' values) to the neural network (model)
         """
 
         data_series: pd.Series = self.fraud_data_frame[Constants.IS_FRAUD].sample(n=num_observations,
-                                                                                  random_state=self.random_seed)
+                                                                                  random_state=random_seed)
 
         count_fraudulent_transactions: int = data_series.value_counts().get(1, 0)
         count_valid_transactions: int = data_series.value_counts().get(0, 1)
@@ -68,21 +70,24 @@ class DataPreprocessor:
 
         return tensor
 
-    def get_x_labels_as_tensor(self, num_observations: int) -> Tensor:
+    def get_x_labels_as_tensor(self, num_observations: int, random_seed: int) -> Tensor:
         """
         Retrieves the all feature columns ('x' values) and takes a predefined sample size (100,000 observations).
         Converts the feature columns to a tensor object.
 
+        :param num_observations: Number of observations from the original dataset to include in tensor object
+        :param random_seed: allows for grabbing a sudo-random selection of observations
         :return: a tensor object that will be fed as features ('x' values) to the neural network (model)
         """
 
-        data_frame: pd.DataFrame = self.preprocess_data_frame(num_observations=num_observations)
+        data_frame: pd.DataFrame = self.preprocess_data_frame(num_observations=num_observations,
+                                                              random_seed=random_seed)
 
         tensor = torch.tensor(data_frame.values, dtype=torch.float32)
 
         return tensor
 
-    def preprocess_data_frame(self, num_observations: int) -> pd.DataFrame:
+    def preprocess_data_frame(self, num_observations: int, random_seed: int) -> pd.DataFrame:
         """
 
         Takes a 'random' sample of size "sample_size" (defaulted is 100,000) observations
@@ -99,7 +104,7 @@ class DataPreprocessor:
                                   Constants.NEW_RECIPIENT_BALANCE]
 
         data_frame: pd.DataFrame = self.fraud_data_frame[column_list].sample(n=num_observations,
-                                                                             random_state=self.random_seed)
+                                                                             random_state=random_seed)
 
         # Specifies the transformations each column needs to undergo
         preprocessor = ColumnTransformer(
@@ -176,8 +181,9 @@ class Model:
         logger.info(f"Number of Data Set Observations Used: {num_observations:,}")
         logger.info("===============================================")
 
-        training_dataset: DataLoader = self.data_preprocessor.get_training_dataset(num_observations=num_observations,
-                                                                                   batch_size=batch_size)
+        training_dataset: DataLoader = self.data_preprocessor.get_random_dataset(num_observations=num_observations,
+                                                                                 batch_size=batch_size,
+                                                                                 random_seed=42)
         for epoch in tqdm(range(num_epochs), "Neural Network Training Progress"):
             running_loss: float = 0.0
             epoch_loss_list = []

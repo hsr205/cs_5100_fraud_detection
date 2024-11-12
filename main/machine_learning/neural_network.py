@@ -181,13 +181,17 @@ class Model:
         logger.info(f"Number of Data Set Observations Used: {num_observations:,}")
         logger.info("===============================================")
 
-        training_dataset: DataLoader = self.data_preprocessor.get_random_dataset(num_observations=num_observations,
-                                                                                 batch_size=batch_size,
-                                                                                 random_seed=42)
+        training_loader: DataLoader = self.data_preprocessor.get_random_dataset(num_observations=num_observations,
+                                                                                batch_size=batch_size,
+                                                                                random_seed=42)
+
+        logger.info("Starting Neural Network Training")
+        logger.info("===============================================")
+
         for epoch in tqdm(range(num_epochs), "Neural Network Training Progress"):
             running_loss: float = 0.0
             epoch_loss_list = []
-            for inputs, labels in training_dataset:
+            for inputs, labels in training_loader:
                 inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located
                 inputs = inputs.view(inputs.size(0), -1)
                 # Move tensor labels to same devise the Model is located and convert values to 32-bit
@@ -202,6 +206,10 @@ class Model:
             epoch_loss: float = running_loss / (num_observations / batch_size)
             epoch_loss_matrix.append(epoch_loss_list)
             logger.info(f'Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}')
+
+        logger.info("Completed Neural Network Training")
+        logger.info("===============================================")
+
         return epoch_loss_matrix
 
     def write_results(self, epoch_loss_list: list[list[float]]) -> None:

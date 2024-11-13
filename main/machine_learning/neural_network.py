@@ -27,72 +27,120 @@ class DataPreprocessor:
     def __init__(self, fraud_data_frame: pd.DataFrame):
         self.fraud_data_frame = fraud_data_frame
 
-    def get_random_dataset(self, num_observations: int, random_seed: int, batch_size: int = 64) -> DataLoader:
+    def get_training_dataloader(self, sample_data_size: int = 6000, batch_size: int = 128) -> DataLoader:
         """
         Combines the x-features / y-labels of the data set into a single DataLoader object
 
-        :param num_observations: Number of observations from the original dataset to include in tensor object
-        :param random_seed: allows for grabbing a sudo-random selection of observations
+        :param sample_data_size: sets the number of observations to retrieve
         :param batch_size: The size of the inputs to inject into the one at one time
-
         :return: a DataLoader object that is compatible with the PyTorch framework for model creation
         """
+        training_dataframe: pd.DataFrame = self.get_training_dataframe()
+        features, labels = self.get_tensors(data_frame=training_dataframe)
 
-        features: Tensor = self.get_x_labels_as_tensor(num_observations=num_observations, random_seed=random_seed)
-        outputs: Tensor = self.get_y_labels_as_tensor(num_observations=num_observations, random_seed=random_seed)
-        dataset: TensorDataset = TensorDataset(features, outputs)
+        logger.info(f"features.size() = {features.size()}")
+        logger.info(f"labels.size() = {labels.size()}")
+
+        dataset: TensorDataset = TensorDataset(features, labels)
         dataloader: DataLoader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         return dataloader
 
-    def get_y_labels_as_tensor(self, num_observations: int, random_seed: int) -> Tensor:
+    def get_testing_dataloader(self, sample_data_size: int = 6000, batch_size: int = 128) -> DataLoader:
         """
-        Retrieves the isFraud column (series) and takes a predefined sample size (100,000 observations).
-        Converts the isFraud series to a tensor object.
+        Combines the x-features / y-labels of the data set into a single DataLoader object
 
-        :param num_observations: Number of observations from the original dataset to include in tensor object
-        :param random_seed: allows for grabbing a sudo-random selection of observations
-        :return: a tensor object that will be fed as labels ('y' values) to the neural network (model)
-        """
-
-        data_series: pd.Series = self.fraud_data_frame[Constants.IS_FRAUD].sample(n=num_observations,
-                                                                                  random_state=random_seed)
-
-        count_fraudulent_transactions: int = data_series.value_counts().get(1, 0)
-        count_valid_transactions: int = data_series.value_counts().get(0, 1)
-
-        logger.info(f"Valid Transactions In Dataset: {count_valid_transactions:,}")
-        logger.info(f"Fraudulent Transactions In Dataset: {count_fraudulent_transactions:,}")
-        logger.info("===============================================")
-
-        # We convert the row vector in a column vector in order to ensure that
-        # the shape matches the shape of the model's output tensor
-        tensor = torch.tensor(data_series.values, dtype=torch.float32).unsqueeze(1)
-
-        return tensor
-
-    def get_x_labels_as_tensor(self, num_observations: int, random_seed: int) -> Tensor:
-        """
-        Retrieves the all feature columns ('x' values) and takes a predefined sample size (100,000 observations).
-        Converts the feature columns to a tensor object.
-
-        :param num_observations: Number of observations from the original dataset to include in tensor object
-        :param random_seed: allows for grabbing a sudo-random selection of observations
-        :return: a tensor object that will be fed as features ('x' values) to the neural network (model)
+        :param sample_data_size: sets the number of observations to retrieve
+        :param batch_size: The size of the inputs to inject into the one at one time
+        :return: a DataLoader object that is compatible with the PyTorch framework for model creation
         """
 
-        data_frame: pd.DataFrame = self.preprocess_data_frame(num_observations=num_observations,
-                                                              random_seed=random_seed)
+        testing_dataframe: pd.DataFrame = self.get_testing_dataframe()
+        features, labels = self.get_tensors(data_frame=testing_dataframe)
+        dataset: TensorDataset = TensorDataset(features, labels)
+        dataloader: DataLoader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        return dataloader
 
-        tensor = torch.tensor(data_frame.values, dtype=torch.float32)
+    def get_training_dataframe(self, train_size: int = 4000) -> pd.DataFrame:
+        """
+        Generates a balanced training dataset with the specified number of fraud and valid transactions.
 
-        return tensor
+        :param train_size: Number of fraud and valid samples to include in the training set (default 3,000 for each).
+        :return: DataFrame containing the training data.
+        """
+        data_frame = self.fraud_data_frame
 
-    def preprocess_data_frame(self, num_observations: int, random_seed: int) -> pd.DataFrame:
+        # Separate fraud and valid transactions
+        fraud_df = data_frame[data_frame[Constants.IS_FRAUD] == 1].sample(frac=1).reset_index(
+            drop=True)  # Shuffle fraud data
+        valid_df = data_frame[data_frame[Constants.IS_FRAUD] == 0].sample(frac=1).reset_index(
+            drop=True)  # Shuffle valid data
+
+        print(f"len(fraud_df) = {len(fraud_df)}")
+        print(f"len(valid_df) = {len(valid_df)}")
+
+        # Ensure there are enough samples for training
+        fraud_train = fraud_df.head(train_size)
+        valid_train = valid_df.head(train_size)
+
+        print(f"len(fraud_train) = {len(fraud_train)}")
+        print(f"len(valid_train) = {len(valid_train)}")
+
+        # Combine fraud and valid for training set
+        train_data = pd.concat([fraud_train, valid_train]).sample(frac=1).reset_index(
+            drop=True)  # Shuffle combined data
+
+        print(f"len(train_data) = {len(train_data)}")
+
+        return train_data
+
+    def get_testing_dataframe(self, train_size: int = 4000) -> pd.DataFrame:
+        """
+        Generates a balanced testing dataset from the remaining fraud and valid transactions after training data selection.
+
+        :param train_size: Number of fraud and valid samples used in the training set (default 3,000 for each).
+        :return: DataFrame containing the testing data.
+        """
+        data_frame = self.fraud_data_frame
+
+        # Separate fraud and valid transactions
+        fraud_df = data_frame[data_frame[Constants.IS_FRAUD] == 1].sample(frac=1).reset_index(
+            drop=True)  # Shuffle fraud data
+        valid_df = data_frame[data_frame[Constants.IS_FRAUD] == 0].sample(frac=1).reset_index(
+            drop=True)  # Shuffle valid data
+
+        # The remaining data for testing
+        fraud_test = fraud_df.iloc[train_size:]
+        valid_test = valid_df.iloc[train_size:]
+        test_data = pd.concat([fraud_test, valid_test]).sample(frac=1).reset_index(drop=True)
+
+        return test_data
+
+    def get_tensors(self, data_frame: pd.DataFrame) -> tuple[Tensor, Tensor]:
+        """
+        Converts a dataframe into two separate tensors. A tensor of features (x-values) and a tensor of labels (y-values)
+
+        :param: data_frame
+        :param: sample_data_size: sets the number of observations to retrieve
+        :return: a tuple containing both the feature and label tensors
         """
 
-        Takes a 'random' sample of size "sample_size" (defaulted is 100,000) observations
-        and conducts data preprocessing on each of the features
+        labels_data_series: pd.Series = data_frame.query(f"{Constants.IS_FRAUD} == 1")[Constants.IS_FRAUD]
 
+        features_data_frame: pd.DataFrame = data_frame.drop(columns=[Constants.IS_FRAUD])
+
+        processed_features_data_frame: pd.DataFrame = self.preprocess_data_frame(input_dataframe=features_data_frame)
+
+        features_tensor = torch.tensor(processed_features_data_frame.values, dtype=torch.float32)
+        labels_tensor = torch.tensor(labels_data_series.values, dtype=torch.float32).unsqueeze(1)
+
+        return features_tensor, labels_tensor
+
+    def preprocess_data_frame(self, input_dataframe: pd.DataFrame) -> pd.DataFrame:
+        """
+
+        Takes in a dataframe and preprocesses the values for later model consumption
+
+        :param: input_dataframe: the input dataframe that the method will
         :return: pandas data frame containing the preprocesses data
         """
 
@@ -103,8 +151,7 @@ class DataPreprocessor:
                                   Constants.NEW_TRANSACTION_BALANCE,
                                   Constants.NEW_RECIPIENT_BALANCE]
 
-        data_frame: pd.DataFrame = self.fraud_data_frame[column_list].sample(n=num_observations,
-                                                                             random_state=random_seed)
+        dataframe: pd.DataFrame = input_dataframe[column_list]
 
         # Specifies the transformations each column needs to undergo
         preprocessor = ColumnTransformer(
@@ -119,7 +166,7 @@ class DataPreprocessor:
             remainder='passthrough'
         )
 
-        processed_data = preprocessor.fit_transform(data_frame)
+        processed_data = preprocessor.fit_transform(dataframe)
 
         # Convert back to DataFrame with column names for easier viewing
         result_column_list: list[str] = ['amount_norm',
@@ -166,6 +213,7 @@ class NeuralNetwork(nn.Module):
 
 @dataclass
 class Model:
+    model_file_path: str
 
     def __init__(self, fraud_data_frame: pd.DataFrame):
         self.device = self.get_device()
@@ -175,16 +223,17 @@ class Model:
         self.fraud_data_frame = fraud_data_frame
         self.data_preprocessor = DataPreprocessor(fraud_data_frame=self.fraud_data_frame)
 
-    def train_neural_network(self, num_observations: int, batch_size: int = 64) -> list[list[float]]:
+    def train_neural_network(self, batch_size: int = 128) -> list[list[float]]:
+
         num_epochs = 10
         epoch_loss_matrix: list[list[float]] = [[]]
+        training_loader: DataLoader = self.data_preprocessor.get_training_dataloader()
+
+        num_observations: int = len(training_loader)
+
         logger.info(f"Batch Size: {batch_size}")
         logger.info(f"Number of Data Set Observations Used: {num_observations:,}")
         logger.info("===============================================")
-
-        training_loader: DataLoader = self.data_preprocessor.get_random_dataset(num_observations=num_observations,
-                                                                                batch_size=batch_size,
-                                                                                random_seed=42)
 
         logger.info("Starting Neural Network Training")
         logger.info("===============================================")
@@ -218,13 +267,11 @@ class Model:
 
         result_float: float = 0.0
 
-        batch_size: int = 128
-        num_observations: int = 100000
+        neural_network_obj: NeuralNetwork = NeuralNetwork()
+        neural_network_obj.load_state_dict(torch.load(self.model_file_path))
+        neural_network_obj.eval()
 
-        # TODO: Needs to be 30% of total dataset
-        test_loader: DataLoader = self.data_preprocessor.get_random_dataset(num_observations=num_observations,
-                                                                            batch_size=batch_size,
-                                                                            random_seed=256)
+        test_loader: DataLoader = self.data_preprocessor.get_testing_dataloader(sample_data_size=2000)
 
         logger.info("Starting Neural Network Testing")
         logger.info("===============================================")
@@ -232,16 +279,21 @@ class Model:
         correctly_predicted_observations: int = 0
         total_observations: int = 0
 
-        neural_network_obj: NeuralNetwork = NeuralNetwork()
-
-        neural_network_obj.eval()
-
         with torch.no_grad():
             for data in tqdm(test_loader, "Neural Network Testing Progress"):
                 tensor, target_tensor = data
 
                 neural_network_output = neural_network_obj(tensor)
-                _, predicted_values = torch.max(neural_network_output, 1)
+
+                # Apply sigmoid to convert logits to probabilities
+                probabilities = torch.sigmoid(neural_network_output)
+
+                # Apply threshold to get binary predictions
+                predicted_values = (probabilities >= 0.5).float()
+
+                # Flatten tensors to ensure they are 1D and of the same shape
+                predicted_values = predicted_values.view(-1)
+                target_tensor = target_tensor.view(-1)
 
                 correctly_predicted_observations += (predicted_values == target_tensor).sum().item()
                 total_observations += target_tensor.size(0)
@@ -284,6 +336,7 @@ class Model:
         file_name: str = f"model_{current_date_time}.pth"
         full_output_path: str = str(output_directory_path / file_name)
         torch.save(self.neural_network.state_dict(), full_output_path)
+        self.model_file_path = full_output_path
         logger.info(f"Saved neural network state: {full_output_path}")
 
     @staticmethod

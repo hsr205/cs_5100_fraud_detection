@@ -122,46 +122,41 @@ def main() -> int:
 ---
 
 ```
-2024-11-12 05:22:51 PM - INFO - File found in zip: synthetic_financial_datasets_log.csv
-2024-11-12 05:22:56 PM - INFO - File found in zip: synthetic_financial_datasets_log.csv
-2024-11-12 05:23:02 PM - INFO - Using MPS Device
-2024-11-12 05:23:02 PM - INFO - Batch Size: 128
-2024-11-12 05:23:02 PM - INFO - Number of Data Set Observations Used: <NUM-OBSERVATIONS>
-2024-11-12 05:23:02 PM - INFO - ===============================================
-2024-11-12 05:23:03 PM - INFO - Valid Transactions In Dataset: <NUM-OBSERVATIONS>
-2024-11-12 05:23:03 PM - INFO - Fraudulent Transactions In Dataset: <NUM-OBSERVATIONS>
-2024-11-12 05:23:03 PM - INFO - ===============================================
-2024-11-12 05:23:03 PM - INFO - Starting Neural Network Training
-2024-11-12 05:23:03 PM - INFO - ===============================================
-Neural Network Training Progress:   0%|          | 0/10 [00:00<?, ?it/s]2024-11-12 05:23:13 PM - INFO - Epoch 1/10, Loss: 0.1461
-Neural Network Training Progress:  10%|█         | 1/10 [00:10<01:31, 10.19s/it]2024-11-12 05:23:22 PM - INFO - Epoch 2/10, Loss: 0.1396
-Neural Network Training Progress:  20%|██        | 2/10 [00:19<01:18,  9.86s/it]2024-11-12 05:23:32 PM - INFO - Epoch 3/10, Loss: 0.1006
-Neural Network Training Progress:  30%|███       | 3/10 [00:29<01:08,  9.72s/it]2024-11-12 05:23:42 PM - INFO - Epoch 4/10, Loss: 0.0875
-Neural Network Training Progress:  40%|████      | 4/10 [00:39<00:58,  9.71s/it]2024-11-12 05:23:52 PM - INFO - Epoch 5/10, Loss: 0.0874
-Neural Network Training Progress:  50%|█████     | 5/10 [00:48<00:48,  9.77s/it]2024-11-12 05:24:01 PM - INFO - Epoch 6/10, Loss: 0.0876
-Neural Network Training Progress:  60%|██████    | 6/10 [00:58<00:39,  9.77s/it]2024-11-12 05:24:11 PM - INFO - Epoch 7/10, Loss: 0.0872
-Neural Network Training Progress:  70%|███████   | 7/10 [01:07<00:28,  9.59s/it]2024-11-12 05:24:21 PM - INFO - Epoch 8/10, Loss: 0.0853
-Neural Network Training Progress:  80%|████████  | 8/10 [01:18<00:19,  9.76s/it]2024-11-12 05:24:31 PM - INFO - Epoch 9/10, Loss: 0.0772
-Neural Network Training Progress:  90%|█████████ | 9/10 [01:28<00:09,  9.84s/it]2024-11-12 05:24:40 PM - INFO - Epoch 10/10, Loss: 0.0742
-Neural Network Training Progress: 100%|██████████| 10/10 [01:37<00:00,  9.78s/it]
-2024-11-12 05:24:40 PM - INFO - Completed Neural Network Training
-2024-11-12 05:24:40 PM - INFO - ===============================================
-2024-11-12 05:24:42 PM - INFO - Saved neural network execution results: <FILE-PATH>
-2024-11-12 05:24:42 PM - INFO - Valid Transactions In Dataset: <NUM-OBSERVATIONS>
-2024-11-12 05:24:42 PM - INFO - Fraudulent Transactions In Dataset: <NUM-OBSERVATIONS>
-2024-11-12 05:24:42 PM - INFO - ===============================================
-2024-11-12 05:24:42 PM - INFO - Starting Neural Network Testing
-2024-11-12 05:24:42 PM - INFO - ===============================================
-Neural Network Testing Progress: 100%|██████████| 782/782 [00:00<00:00, 3113.66it/s]
-2024-11-12 05:24:42 PM - INFO - ==============================================
-2024-11-12 05:24:42 PM - INFO - Total Observations = <NUM-OBSERVATIONS>
-2024-11-12 05:24:42 PM - INFO - Correctly Predicted Observations = <NUM-OBSERVATIONS>
-2024-11-12 05:24:42 PM - INFO - Neural Network Accuracy: <ACCURACY-PERCENTAGE>
-2024-11-12 05:24:42 PM - INFO - ==============================================
-2024-11-12 05:24:42 PM - INFO - Completed Neural Network Testing
-2024-11-12 05:24:42 PM - INFO - ==============================================
-2024-11-12 05:24:42 PM - INFO - Saved neural network state: <FILE-PATH>
-2024-11-12 05:24:42 PM - INFO - Launching TensorBoard:
+2024-11-13 05:13:32 PM - INFO - File found in zip: synthetic_financial_datasets_log.csv
+2024-11-13 05:13:37 PM - INFO - File found in zip: synthetic_financial_datasets_log.csv
+2024-11-13 05:13:42 PM - INFO - Using MPS Device
+2024-11-13 05:13:43 PM - INFO - Batch Size: 128
+2024-11-13 05:13:43 PM - INFO - ===============================================
+2024-11-13 05:13:43 PM - INFO - Starting Neural Network Training
+2024-11-13 05:13:43 PM - INFO - ===============================================
+Neural Network Training Progress:   0%|          | 0/10 [00:00<?, ?it/s]2024-11-13 05:13:43 PM - INFO - Epoch 1/10, Loss: 126.1536
+Neural Network Training Progress:  10%|█         | 1/10 [00:00<00:06,  1.37it/s]2024-11-13 05:13:44 PM - INFO - Epoch 2/10, Loss: 115.1967
+Neural Network Training Progress:  20%|██        | 2/10 [00:01<00:04,  1.76it/s]2024-11-13 05:13:44 PM - INFO - Epoch 3/10, Loss: 108.0526
+Neural Network Training Progress:  30%|███       | 3/10 [00:01<00:03,  1.95it/s]2024-11-13 05:13:45 PM - INFO - Epoch 4/10, Loss: 105.5085
+Neural Network Training Progress:  40%|████      | 4/10 [00:02<00:02,  2.04it/s]2024-11-13 05:13:45 PM - INFO - Epoch 5/10, Loss: 104.2992
+Neural Network Training Progress:  50%|█████     | 5/10 [00:02<00:02,  2.09it/s]2024-11-13 05:13:46 PM - INFO - Epoch 6/10, Loss: 102.5403
+Neural Network Training Progress:  60%|██████    | 6/10 [00:03<00:01,  2.12it/s]2024-11-13 05:13:46 PM - INFO - Epoch 7/10, Loss: 103.1195
+Neural Network Training Progress:  70%|███████   | 7/10 [00:03<00:01,  2.14it/s]2024-11-13 05:13:47 PM - INFO - Epoch 8/10, Loss: 101.9617
+Neural Network Training Progress:  80%|████████  | 8/10 [00:03<00:00,  2.16it/s]2024-11-13 05:13:47 PM - INFO - Epoch 9/10, Loss: 102.0922
+Neural Network Training Progress:  90%|█████████ | 9/10 [00:04<00:00,  2.17it/s]2024-11-13 05:13:47 PM - INFO - Epoch 10/10, Loss: 100.1616
+Neural Network Training Progress: 100%|██████████| 10/10 [00:04<00:00,  2.07it/s]
+2024-11-13 05:13:47 PM - INFO - ===============================================
+2024-11-13 05:13:47 PM - INFO - Completed Neural Network Training
+2024-11-13 05:13:47 PM - INFO - ===============================================
+2024-11-13 05:13:48 PM - INFO - Saved neural network execution results: <FILE-PATH>
+2024-11-13 05:13:48 PM - INFO - Saved neural network state: <FILE-PATH>
+  neural_network_obj.load_state_dict(torch.load(self.model_file_path, map_location=self.device))
+2024-11-13 05:13:48 PM - INFO - Starting Neural Network Testing
+2024-11-13 05:13:48 PM - INFO - ===============================================
+Neural Network Testing Progress: 100%|██████████| 63/63 [00:00<00:00, 778.70it/s]
+2024-11-13 05:13:48 PM - INFO - ==============================================
+2024-11-13 05:13:48 PM - INFO - Total Observations = 4,000
+2024-11-13 05:13:48 PM - INFO - Correctly Predicted Observations = 3,579
+2024-11-13 05:13:48 PM - INFO - Neural Network Accuracy: 89.48%
+2024-11-13 05:13:48 PM - INFO - ==============================================
+2024-11-13 05:13:48 PM - INFO - Completed Neural Network Testing
+2024-11-13 05:13:48 PM - INFO - ==============================================
+2024-11-13 05:13:48 PM - INFO - Launching TensorBoard:
 TensorFlow installation not found - running with reduced feature set.
 Serving TensorBoard on localhost; to expose to the network, use a proxy or pass --bind_all
 TensorBoard 2.18.0 at http://localhost:6006/ (Press CTRL+C to quit)

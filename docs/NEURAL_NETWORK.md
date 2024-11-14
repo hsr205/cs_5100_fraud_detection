@@ -125,7 +125,6 @@ def main() -> int:
 2024-11-13 05:13:32 PM - INFO - File found in zip: synthetic_financial_datasets_log.csv
 2024-11-13 05:13:37 PM - INFO - File found in zip: synthetic_financial_datasets_log.csv
 2024-11-13 05:13:42 PM - INFO - Using MPS Device
-2024-11-13 05:13:43 PM - INFO - Batch Size: 128
 2024-11-13 05:13:43 PM - INFO - ===============================================
 2024-11-13 05:13:43 PM - INFO - Starting Neural Network Training
 2024-11-13 05:13:43 PM - INFO - ===============================================

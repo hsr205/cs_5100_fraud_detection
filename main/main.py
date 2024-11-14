@@ -23,7 +23,7 @@ def main() -> int:
                                                                                          file_name=file_name)
 
     model: Model = Model(fraud_data_frame=fraud_data_frame)
-    epoch_loss_list: list[list[float]] = model.train_neural_network()
+    epoch_loss_list: list[list[float]] = model.train_neural_network(epochs=20)
     model.write_results(epoch_loss_list=epoch_loss_list)
     model.save_model_state()
     model.test_neural_network()

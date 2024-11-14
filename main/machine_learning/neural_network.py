@@ -237,16 +237,15 @@ class Model:
         self.optimizer = torch.optim.Adam(self.neural_network.parameters(), lr=0.001)
         self.data_preprocessor = DataPreprocessor(fraud_data_frame=fraud_data_frame)
 
-    def train_neural_network(self) -> list[list[float]]:
+    def train_neural_network(self, epochs:int) -> list[list[float]]:
 
-        num_epochs = 10
         epoch_loss_matrix: list[list[float]] = [[]]
         training_loader: DataLoader = self.data_preprocessor.get_training_loader()
 
         logger.info("Starting Neural Network Training")
         logger.info("===============================================")
 
-        for epoch in tqdm(range(num_epochs), "Neural Network Training Progress"):
+        for epoch in tqdm(range(epochs), "Neural Network Training Progress"):
             running_loss: float = 0.0
             epoch_loss_list = []
             for inputs, labels in training_loader:
@@ -263,7 +262,7 @@ class Model:
                 epoch_loss_list.append(running_loss)
 
             epoch_loss_matrix.append(epoch_loss_list)
-            logger.info(f'Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss:.4f}')
+            logger.info(f'Epoch {epoch + 1}/{epochs}, Loss: {running_loss:.4f}')
 
         logger.info("===============================================")
         logger.info("Completed Neural Network Training")

@@ -271,9 +271,7 @@ class Model:
 
         return epoch_loss_matrix
 
-    def test_neural_network(self) -> float:
-
-        result_float: float = 0.0
+    def test_neural_network(self) -> None:
 
         neural_network_obj: NeuralNetwork = NeuralNetwork()
         neural_network_obj.load_state_dict(
@@ -286,8 +284,8 @@ class Model:
         logger.info("Starting Neural Network Testing")
         logger.info("===============================================")
 
-        correctly_predicted_observations: int = 0
         total_observations: int = 0
+        correctly_predicted_observations: int = 0
 
         with torch.no_grad():
             for inputs, labels in tqdm(testing_loader, "Neural Network Testing Progress"):
@@ -317,8 +315,6 @@ class Model:
 
         logger.info("Completed Neural Network Testing")
         logger.info("==============================================")
-
-        return result_float
 
     def write_results(self, epoch_loss_list: list[list[float]]) -> None:
         """

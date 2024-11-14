@@ -237,7 +237,7 @@ class Model:
         self.optimizer = torch.optim.Adam(self.neural_network.parameters(), lr=0.001)
         self.data_preprocessor = DataPreprocessor(fraud_data_frame=fraud_data_frame)
 
-    def train_neural_network(self, epochs:int) -> list[list[float]]:
+    def train_neural_network(self, epochs: int) -> list[list[float]]:
 
         epoch_loss_matrix: list[list[float]] = [[]]
         training_loader: DataLoader = self.data_preprocessor.get_training_loader()

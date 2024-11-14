@@ -60,7 +60,7 @@ class DataPreprocessor:
         return testing_loader
 
     def _create_data_loader(self, features_tensor: torch.Tensor, labels_tensor: torch.Tensor,
-                            batch_size: int = 64) -> DataLoader:
+                            batch_size: int = 512) -> DataLoader:
         """
         Creates a DataLoader from feature / label tensors.
 
@@ -96,28 +96,19 @@ class DataPreprocessor:
         :param: n_samples (int): Number of samples to extract for each class.
         :returns: Tuple[np.ndarray, np.ndarray]: Features and labels as NumPy arrays.
         """
-        # Extract n_samples of fraud and valid observations
 
         dataframe = self.fraud_data_frame
 
-        # Extract samples
         fraud_observations = dataframe[dataframe[Constants.IS_FRAUD] == 1].head(n_samples)
         valid_observations = dataframe[dataframe[Constants.IS_FRAUD] == 0].head(n_samples)
 
-        # Combine and shuffle
         combined_observations = pd.concat([fraud_observations, valid_observations]).sample(frac=1).reset_index(
             drop=True)
 
-        # Extract labels before preprocessing
         labels_array = combined_observations[Constants.IS_FRAUD].values
-
-        # Remove label column from features
         features_dataframe = combined_observations.drop(columns=[Constants.IS_FRAUD])
 
-        # Process features
         processed_observations = self._preprocess_data_frame(input_dataframe=features_dataframe)
-
-        # Features as array
         features_array = processed_observations.values
 
         return features_array, labels_array
@@ -218,37 +209,33 @@ class DataPreprocessor:
                 Constants.NEW_RECIPIENT_BALANCE]
 
 
-# TODO: Look at the issue of overfitting, add F1-Score / other accuracy methods
 class NeuralNetwork(nn.Module):
     """
     A feedforward neural network that contains an input layer, hidden layer and an output layer
     """
     _input_size: int = 8
     _hidden_input_size: int = 8
-    _hidden_output_size: int = 5
+    _output_size: int = 1
 
     def __init__(self):
         super(NeuralNetwork, self).__init__()
-        # dropout layer, will randomly zero an element of the input tensor with probability 0.2
-        self.dropout = nn.Dropout(0.2)
-        # Specifies the input_size (default = 8) and the number of nodes in the output layer (8)
-        self.input_layer = nn.Linear(self._input_size, self._hidden_input_size)
-        # Indicates that after the input layer is completed the ReLU (rectified linear unit)
-        # activation function is being called on the first hidden layer's nodes
+        self.dropout_layer_1 = nn.Dropout(0.2)
+        self.input_layer = nn.Linear(in_features=self._input_size, out_features=self._hidden_input_size)
         self.relu1 = nn.ReLU()
-        # Second hidden layer indicating that the number of input nodes is 10 and the number of output nodes is 5
-        self.hidden_layer = nn.Linear(self._hidden_input_size, self._hidden_output_size)
-        # a second dropout layer, will randomly zero a hidden neuron probability 0.5
-        self.dropout = nn.Dropout(0.5)
-        self.relu2 = nn.ReLU()  # ReLU (rectified linear unit) used again on the hidden layer
-        self.output_layer = nn.Linear(self._hidden_output_size, 1)  # Output layer consisting of a single node
+        self.hidden_layer_1 = nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size)
+        self.dropout_layer_2 = nn.Dropout(0.5)
+        self.relu2 = nn.ReLU()
+        self.hidden_layer_2 = nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size)
+        self.relu3 = nn.ReLU()
+        self.output_layer = nn.Linear(in_features=self._hidden_input_size, out_features=self._output_size)
 
     def forward(self, tensor_obj: Tensor) -> Tensor:
-        drop_out_layer1: Tensor = self.dropout(tensor_obj)
-        input_layer: Tensor = self.relu1(self.input_layer(drop_out_layer1))
-        hidden_layer: Tensor = self.relu2(self.hidden_layer(input_layer))
-        drop_out_layer2: Tensor = self.dropout(hidden_layer)
-        output_layer: Tensor = self.output_layer(drop_out_layer2)
+        drop_out_layer_1: Tensor = self.dropout_layer_1(tensor_obj)
+        input_layer: Tensor = self.relu1(self.input_layer(drop_out_layer_1))
+        hidden_layer_1: Tensor = self.relu2(self.hidden_layer_1(input_layer))
+        drop_out_layer_2: Tensor = self.dropout_layer_2(hidden_layer_1)
+        hidden_layer_2: Tensor = self.relu3(self.hidden_layer_2(drop_out_layer_2))
+        output_layer: Tensor = self.output_layer(hidden_layer_2)
         return output_layer
 
 
@@ -264,17 +251,11 @@ class Model:
         self.fraud_data_frame = fraud_data_frame
         self.data_preprocessor = DataPreprocessor(fraud_data_frame=self.fraud_data_frame)
 
-    def train_neural_network(self, batch_size: int = 128) -> list[list[float]]:
+    def train_neural_network(self) -> list[list[float]]:
 
         num_epochs = 10
         epoch_loss_matrix: list[list[float]] = [[]]
         training_loader: DataLoader = self.data_preprocessor.get_training_loader()
-
-        total_observations: int = 0
-
-        logger.info(f"Batch Size: {batch_size}")
-        # logger.info(f"Number of Data Set Observations Used: {num_observations:,}")
-        logger.info("===============================================")
 
         logger.info("Starting Neural Network Training")
         logger.info("===============================================")

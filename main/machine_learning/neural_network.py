@@ -70,8 +70,8 @@ class DataPreprocessor:
 
         :returns:DataLoader: A PyTorch DataLoader for the to be used in model training / testing.
         """
-        dataset = TensorDataset(features_tensor, labels_tensor)
-        data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        dataset: torch.TensorDataset = TensorDataset(features_tensor, labels_tensor)
+        data_loader: torch.DataLoader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         return data_loader
 
     def _convert_to_tensors(self, features_array: np.ndarray, labels_array: np.ndarray) -> tuple[
@@ -84,8 +84,8 @@ class DataPreprocessor:
 
         :return: tuple[torch.Tensor, torch.Tensor]: A tuple containing the converted feature tensor / label tensors.
         """
-        features_tensor = torch.tensor(features_array, dtype=torch.float32)
-        labels_tensor = torch.tensor(labels_array, dtype=torch.float32).unsqueeze(1)
+        features_tensor: torch.Tensor = torch.tensor(features_array, dtype=torch.float32)
+        labels_tensor: torch.Tensor = torch.tensor(labels_array, dtype=torch.float32).unsqueeze(1)
         return features_tensor, labels_tensor
 
     def _prepare_training_data(self, n_samples: int = 6000) -> tuple[np.array, np.array]:
@@ -97,19 +97,20 @@ class DataPreprocessor:
         :returns: Tuple[np.ndarray, np.ndarray]: Features and labels as NumPy arrays.
         """
 
-        dataframe = self.fraud_data_frame
+        dataframe: pd.DataFrame = self.fraud_data_frame
 
-        fraud_observations = dataframe[dataframe[Constants.IS_FRAUD] == 1].head(n_samples)
-        valid_observations = dataframe[dataframe[Constants.IS_FRAUD] == 0].head(n_samples)
+        fraud_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 1].head(n_samples)
+        valid_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 0].head(n_samples)
 
-        combined_observations = pd.concat([fraud_observations, valid_observations]).sample(frac=1).reset_index(
+        combined_observations: pd.DataFrame = pd.concat([fraud_observations, valid_observations]).sample(
+            frac=1).reset_index(
             drop=True)
 
-        labels_array = combined_observations[Constants.IS_FRAUD].values
-        features_dataframe = combined_observations.drop(columns=[Constants.IS_FRAUD])
+        labels_array: np.array = combined_observations[Constants.IS_FRAUD].values
+        features_dataframe: pd.DataFrame = combined_observations.drop(columns=[Constants.IS_FRAUD])
 
-        processed_observations = self._preprocess_data_frame(input_dataframe=features_dataframe)
-        features_array = processed_observations.values
+        processed_observations: pd.DataFrame = self._preprocess_data_frame(input_dataframe=features_dataframe)
+        features_array: np.array = processed_observations.values
 
         return features_array, labels_array
 
@@ -121,30 +122,21 @@ class DataPreprocessor:
         :param: n_samples (int): Number of samples to extract for each class.
         :returns: Tuple[np.ndarray, np.ndarray]: Features and labels as NumPy arrays.
         """
-        # Extract n_samples of fraud and valid observations
+        max_rows: int = 8000
+        dataframe: pd.DataFrame = self.fraud_data_frame
 
-        dataframe = self.fraud_data_frame
-        max_rows = 8000
+        fraud_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 1][n_samples:max_rows]
+        valid_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 0][n_samples:max_rows]
 
-        # Extract samples
-        fraud_observations = dataframe[dataframe[Constants.IS_FRAUD] == 1][n_samples:max_rows]
-        valid_observations = dataframe[dataframe[Constants.IS_FRAUD] == 0][n_samples:max_rows]
-
-        # Combine and shuffle
-        combined_observations = pd.concat([fraud_observations, valid_observations]).sample(frac=1).reset_index(
+        combined_observations: pd.DataFrame = pd.concat([fraud_observations, valid_observations]).sample(
+            frac=1).reset_index(
             drop=True)
 
-        # Extract labels before preprocessing
-        labels_array = combined_observations[Constants.IS_FRAUD].values
+        labels_array: np.array = combined_observations[Constants.IS_FRAUD].values
+        features_dataframe: pd.DataFrame = combined_observations.drop(columns=[Constants.IS_FRAUD])
 
-        # Remove label column from features
-        features_dataframe = combined_observations.drop(columns=[Constants.IS_FRAUD])
-
-        # Process features
-        processed_observations = self._preprocess_data_frame(input_dataframe=features_dataframe)
-
-        # Features as array
-        features_array = processed_observations.values
+        processed_observations: pd.DataFrame = self._preprocess_data_frame(input_dataframe=features_dataframe)
+        features_array: np.array = processed_observations.values
 
         return features_array, labels_array
 
@@ -157,16 +149,11 @@ class DataPreprocessor:
         :return: pandas data frame containing the preprocesses data
         """
 
-        # Lists columns of the data set to include
         column_list: list[str] = self._get_column_list()
         dataframe: pd.DataFrame = input_dataframe[column_list]
-
-        # Specifies the transformations each column needs to undergo
         preprocessor: ColumnTransformer = self._get_column_transformer()
-
         processed_data = preprocessor.fit_transform(dataframe)
 
-        # Convert back to DataFrame with column names for easier viewing
         result_column_list: list[str] = self._get_result_column_list()
 
         return pd.DataFrame(processed_data, columns=result_column_list)
@@ -211,7 +198,7 @@ class DataPreprocessor:
 
 class NeuralNetwork(nn.Module):
     """
-    A feedforward neural network that contains an input layer, hidden layer and an output layer
+    A feedforward neural network that contains an input layer, two hidden layers, two drop out layers and an output layer
     """
     _input_size: int = 8
     _hidden_input_size: int = 8
@@ -248,8 +235,7 @@ class Model:
         self.neural_network = NeuralNetwork().to(self.device)
         self.criterion = BCEWithLogitsLoss()
         self.optimizer = torch.optim.Adam(self.neural_network.parameters(), lr=0.001)
-        self.fraud_data_frame = fraud_data_frame
-        self.data_preprocessor = DataPreprocessor(fraud_data_frame=self.fraud_data_frame)
+        self.data_preprocessor = DataPreprocessor(fraud_data_frame=fraud_data_frame)
 
     def train_neural_network(self) -> list[list[float]]:
 
@@ -290,7 +276,8 @@ class Model:
         result_float: float = 0.0
 
         neural_network_obj: NeuralNetwork = NeuralNetwork()
-        neural_network_obj.load_state_dict(torch.load(self.model_file_path, map_location=self.device))
+        neural_network_obj.load_state_dict(
+            torch.load(self.model_file_path, map_location=self.device, weights_only=True))
         neural_network_obj.to(self.device)
         neural_network_obj.eval()
 

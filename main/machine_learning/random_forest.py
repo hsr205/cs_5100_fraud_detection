@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from matplotlib import ticker
-from ..logger import Logger
-from ..main import Constants
 
 import numpy as np
 from collections import Counter
@@ -28,27 +26,33 @@ class DecisionTree:
         return Counter(y).most_common(1)[0][0]
 
     def _best_split(self, X, y):
-        num_samples, num_features = X.shape
-        best_gini = 1.0
-        best_feature, best_threshold = None, None
-        for feature_index in range(num_features):
-            thresholds, classes = zip(*sorted(zip(X[:, feature_index], y)))
-            num_left = [0] * len(set(y))
-            num_right = Counter(y)
-            for i in range(1, num_samples):
-                c = classes[i - 1]
-                num_left[c] += 1
-                num_right[c] -= 1
-                gini_left = 1.0 - sum((num_left[x] / i) ** 2 for x in set(y))
-                gini_right = 1.0 - sum((num_right[x] / (num_samples - i)) ** 2 for x in set(y))
-                gini = (i * gini_left + (num_samples - i) * gini_right) / num_samples
-                if thresholds[i] == thresholds[i - 1]:
-                    continue
-                if gini < best_gini:
-                    best_gini = gini
-                    best_feature = feature_index
-                    best_threshold = (thresholds[i] + thresholds[i - 1]) / 2
-        return best_feature, best_threshold
+      num_samples, num_features = X.shape
+      best_gini = 1.0
+      best_feature, best_threshold = None, None
+      unique_classes = set(y)  # Get the unique classes in y
+
+      for feature_index in range(num_features):
+        thresholds, classes = zip(*sorted(zip(X[:, feature_index], y)))
+        num_left = Counter()  # Initialize as Counter to handle arbitrary labels
+        num_right = Counter(
+          classes)  # Start with all instances in the right split
+
+        for i in range(1, num_samples):
+          c = classes[i - 1]
+          num_left[c] += 1
+          num_right[c] -= 1
+          gini_left = 1.0 - sum((num_left[x] / i) ** 2 for x in unique_classes)
+          gini_right = 1.0 - sum(
+              (num_right[x] / (num_samples - i)) ** 2 for x in unique_classes)
+          gini = (i * gini_left + (num_samples - i) * gini_right) / num_samples
+
+          if thresholds[i] == thresholds[i - 1]:
+            continue
+          if gini < best_gini:
+            best_gini = gini
+            best_feature = feature_index
+            best_threshold = (thresholds[i] + thresholds[i - 1]) / 2
+      return best_feature, best_threshold
 
     def _split(self, X_column, split_threshold):
         left_indices = np.argwhere(X_column < split_threshold).flatten()
@@ -69,7 +73,7 @@ class DecisionTree:
 
 
 class RandomForest:
-  def __init__(self, num_trees=10, max_depth=None, min_samples_split=2):
+  def __init__(self, num_trees=3, max_depth=3, min_samples_split=2):
     self.num_trees = num_trees
     self.max_depth = max_depth
     self.min_samples_split = min_samples_split

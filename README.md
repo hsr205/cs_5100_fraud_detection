@@ -3,17 +3,17 @@
 ## Table of Contents
 
 - [Introduction](#Introduction)
-- [Module-Descriptions](#Module-Descriptions)
-- [Getting-Started](#Getting-Started)
+- [Module Descriptions](#Module-Descriptions)
+- [Getting Started](#Getting-Started)
 - [Requirements](#Requirements)
-- [Installation](#Installation)
+- [Installation and Execution](#Installation-and-Execution)
 - [Acknowledgements](#Acknowledgements)
 
 ## Introduction
 
 The financial fraud detection system contains both supervised and unsupervised learning methods on a financial dataset to determine which transactions can and cannot be classified as fraud. The system has been trained on a large data set of more than six million data points and can accurately predict fraud in up to 90% of different cases. By leveraging various approaches such as K-Means, random forest, anomaly detection, and a feed-forward neural network we as a team were able to gain valuable insights into how financial fraud can and cannot be properly classified.
 
-## Module-Descriptions
+## Module Descriptions
 
 - main.py - main script for execution the application
 - logger.py - custom logger for terminal output
@@ -26,7 +26,7 @@ The financial fraud detection system contains both supervised and unsupervised l
 - random_forest.py - MALHAR TO FILL IN
 - data_dictionary_20241009.xlsx - a simple excel file that outlines the description of the feature and labels contained in our dataset
 
-## Getting-Started
+## Getting Started
 
 ### Requirements
 
@@ -40,7 +40,13 @@ The financial fraud detection system contains both supervised and unsupervised l
 - tensorboard~=2.18.0
 - tensorboard-data-server~=0.7.2
 
-### Installation
+### Installation and Execution
+#### In order to execute the application you must download the following dataset, <a href="https://www.kaggle.com/datasets/sriharshaeedala/financial-fraud-detection-dataset/data">Financial Fraud Detection Dataset</a>.
+#### The dataset must be placed into the following directory 
+
+   ```bash
+   cs_5100_fraud_detection/main/data/fraud_detection_data_set
+   ```
 
 1. Clone the repository:
    ```bash

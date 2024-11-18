@@ -24,6 +24,7 @@ The financial fraud detection system contains both supervised and unsupervised l
 - k_means_leanring.py - ADD DESCRIPTION
 - neural_network.py - ADD DESCRIPTION
 - requirements.txt - ADD DESCRIPTION
+- random_forest.py - MALHAR TO FILL IN
 - data_dictionary_20241009.xlsx - ADD DESCRIPTION
 
 ## Getting-Started

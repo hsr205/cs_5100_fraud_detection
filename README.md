@@ -11,7 +11,6 @@
 
 ## Introduction
 
-
 The financial fraud detection system contains both supervised and unsupervised learning methods on a financial dataset to determine which transactions can and cannot be classified as fraud. The system has been trained on a large data set of more than six million data points and can accurately predict fraud in up to 90% of different cases. By leveraging various approaches such as K-Means, random forest, anomaly detection, and a feed-forward neural network we as a team were able to gain valuable insights into how financial fraud can and cannot be properly classified.
 
 ## Module-Descriptions
@@ -24,6 +23,7 @@ The financial fraud detection system contains both supervised and unsupervised l
 - k_means_learning.py - script that encapsulates all k-means unsupervised learning logic 
 - neural_network.py - script that encapsulates all neural network supervised learning logic
 - requirements.txt - holds all relevant application dependencies
+- random_forest.py - MALHAR TO FILL IN
 - data_dictionary_20241009.xlsx - a simple excel file that outlines the description of the feature and labels contained in our dataset
 
 ## Getting-Started

@@ -1,7 +1,5 @@
 # Foundations of Artificial Intelligence - Fraud Detection Application
 
----
-
 ## Table of Contents
 
 - [Introduction](#Introduction)
@@ -10,14 +8,10 @@
 - [Requirements](#Requirements)
 - [Acknowledgements](#Acknowledgements)
 
---- 
-
 ## Introduction
 
 
-The financial fraud detection system imposes supervised and unsupervised learning methods on a financial dataset to determine which transactions can / cannot be classified as fraud. The system has been trained on a large data set of more than six million data points and can determine which transactions are/are not fraudulent as evidenced by our discoveries Using K-Means Clustering, we could separate data points indicating fraud from those data points representing valid transactions. By leveraging a feed-forward neural network, with nearly six million data points as input we were able to determine fraudulent transactions in [ENTER PERCENTAGE] of the time.
-
----
+The financial fraud detection system contains both supervised and unsupervised learning methods on a financial dataset to determine which transactions can and cannot be classified as fraud. The system has been trained on a large data set of more than six million data points and can accurately predict fraud in up to 90% of different cases. By leveraging various approaches such as K-Means, random forest, anomaly detection, and a feed-forward neural network we as a team were able to gain valuable insights into how financial fraud can and cannot be properly classified.
 
 ## Module-Descriptions
 
@@ -31,8 +25,6 @@ The financial fraud detection system imposes supervised and unsupervised learnin
 - neural_network.py - ADD DESCRIPTION
 - requirements.txt - ADD DESCRIPTION
 - data_dictionary_20241009.xlsx - ADD DESCRIPTION
-
----
 
 ## Getting-Started
 
@@ -48,12 +40,8 @@ The financial fraud detection system imposes supervised and unsupervised learnin
 - tensorboard~=2.18.0
 - tensorboard-data-server~=0.7.2
 
----
-
 ## Acknowledgements
 
 The following resources were used throughout the course of this project:
 
 - <a href="https://www.kaggle.com/datasets/sriharshaeedala/financial-fraud-detection-dataset/data">Financial Fraud Detection Dataset</a> as the primary data set we leveraged</li>
-
----

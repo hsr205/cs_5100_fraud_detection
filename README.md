@@ -3,31 +3,30 @@
 ## Table of Contents
 
 - [Introduction](#Introduction)
-- [Module-Descriptions](#Module-Descriptions)
-- [Getting-Started](#Getting-Started)
+- [Module Descriptions](#Module-Descriptions)
+- [Getting Started](#Getting-Started)
 - [Requirements](#Requirements)
+- [Installation and Execution](#Installation-and-Execution)
 - [Acknowledgements](#Acknowledgements)
 
 ## Introduction
 
-
 The financial fraud detection system contains both supervised and unsupervised learning methods on a financial dataset to determine which transactions can and cannot be classified as fraud. The system has been trained on a large data set of more than six million data points and can accurately predict fraud in up to 90% of different cases. By leveraging various approaches such as K-Means, random forest, anomaly detection, and a feed-forward neural network we as a team were able to gain valuable insights into how financial fraud can and cannot be properly classified.
 
-## Module-Descriptions
+## Module Descriptions
 
-
-- main.py - ADD DESCRIPTION
-- logger.py - ADD DESCRIPTION
-- constants.py - ADD DESCRIPTION
-- fraud_data.py - ADD DESCRIPTION
-- custom_data_loader.py - ADD DESCRIPTION
-- k_means_leanring.py - ADD DESCRIPTION
-- neural_network.py - ADD DESCRIPTION
-- requirements.txt - ADD DESCRIPTION
+- main.py - main script for execution the application
+- logger.py - custom logger for terminal output
+- constants.py - class to encapsulate all constant fields
+- fraud_data.py - class logic to extract our data from a locally downloaded zip file
+- custom_data_loader.py - implementation of the fraud_data.py script to extract data
+- k_means_learning.py - script that encapsulates all k-means unsupervised learning logic 
+- neural_network.py - script that encapsulates all neural network supervised learning logic
+- requirements.txt - holds all relevant application dependencies
 - random_forest.py - MALHAR TO FILL IN
-- data_dictionary_20241009.xlsx - ADD DESCRIPTION
+- data_dictionary_20241009.xlsx - a simple excel file that outlines the description of the feature and labels contained in our dataset
 
-## Getting-Started
+## Getting Started
 
 ### Requirements
 
@@ -40,6 +39,34 @@ The financial fraud detection system contains both supervised and unsupervised l
 - scikit-learn~=1.5.2
 - tensorboard~=2.18.0
 - tensorboard-data-server~=0.7.2
+
+### Installation and Execution
+#### In order to execute the application you must download the following dataset, <a href="https://www.kaggle.com/datasets/sriharshaeedala/financial-fraud-detection-dataset/data">Financial Fraud Detection Dataset</a>.
+#### The dataset must be placed into the following directory 
+
+   ```bash
+   cs_5100_fraud_detection/main/data/fraud_detection_data_set
+   ```
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/cs_5100_fraud_detection.git
+   ```
+
+2. Navigate to the project directory:
+   ```bash
+   cd cs_5100_fraud_detection/main
+   ```
+
+3. Install the required packages:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Run the application:
+   ```bash
+   python3 main.py
+   ```
 
 ## Acknowledgements
 

@@ -211,8 +211,8 @@ class NeuralNetwork(nn.Module):
     def __init__(self):
         super(NeuralNetwork, self).__init__()
         self.input_layer = nn.Linear(in_features=self._input_size, out_features=self._hidden_input_size)
-        self.relu1 = nn.ReLU()
         self.dropout_layer_1 = nn.Dropout(0.2)
+        self.relu1 = nn.ReLU()
         self.hidden_layer_1 = nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size)
         self.dropout_layer_2 = nn.Dropout(0.5)
         self.relu2 = nn.ReLU()

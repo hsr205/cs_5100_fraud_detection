@@ -99,6 +99,7 @@ class DataPreprocessor:
 
         dataframe: pd.DataFrame = self.fraud_data_frame
 
+
         fraud_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 1].head(n_samples)
         valid_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 0].head(n_samples)
 
@@ -110,6 +111,9 @@ class DataPreprocessor:
         features_dataframe: pd.DataFrame = combined_observations.drop(columns=[Constants.IS_FRAUD])
 
         processed_observations: pd.DataFrame = self._preprocess_data_frame(input_dataframe=features_dataframe)
+
+        # logger.info(f"Columns = {processed_observations.columns}")
+
         features_array: np.array = processed_observations.values
 
         return features_array, labels_array
@@ -206,9 +210,9 @@ class NeuralNetwork(nn.Module):
 
     def __init__(self):
         super(NeuralNetwork, self).__init__()
-        self.dropout_layer_1 = nn.Dropout(0.2)
         self.input_layer = nn.Linear(in_features=self._input_size, out_features=self._hidden_input_size)
         self.relu1 = nn.ReLU()
+        self.dropout_layer_1 = nn.Dropout(0.2)
         self.hidden_layer_1 = nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size)
         self.dropout_layer_2 = nn.Dropout(0.5)
         self.relu2 = nn.ReLU()
@@ -217,9 +221,9 @@ class NeuralNetwork(nn.Module):
         self.output_layer = nn.Linear(in_features=self._hidden_input_size, out_features=self._output_size)
 
     def forward(self, tensor_obj: Tensor) -> Tensor:
-        drop_out_layer_1: Tensor = self.dropout_layer_1(tensor_obj)
-        input_layer: Tensor = self.relu1(self.input_layer(drop_out_layer_1))
-        hidden_layer_1: Tensor = self.relu2(self.hidden_layer_1(input_layer))
+        input_layer: Tensor = self.relu1(self.input_layer(tensor_obj))
+        drop_out_layer_1: Tensor = self.dropout_layer_1(input_layer)
+        hidden_layer_1: Tensor = self.relu2(self.hidden_layer_1(drop_out_layer_1))
         drop_out_layer_2: Tensor = self.dropout_layer_2(hidden_layer_1)
         hidden_layer_2: Tensor = self.relu3(self.hidden_layer_2(drop_out_layer_2))
         output_layer: Tensor = self.output_layer(hidden_layer_2)

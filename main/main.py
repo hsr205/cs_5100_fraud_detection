@@ -5,13 +5,15 @@ import pandas as pd
 from data.custom_data_loader import CustomDataLoader
 from data.fraud_data import FraudDataset
 from machine_learning.neural_network import Model
+from machine_learning.neural_network import DataPreprocessor as dp
+from machine_learning.anomaly_detection import IFModel
 
 
 def main() -> int:
     data_loader: CustomDataLoader = CustomDataLoader()
     file_path_to_data: str = str(
-        Path.cwd() / "data" / "fraud_detection_data_set" / "synthetic_financial_datasets_log.zip")
-    file_name: str = "synthetic_financial_datasets_log.csv"
+        Path.cwd() / "main" / "data" / "fraud_detection_data_set" / "synthetic_financial_datasets_log.zip")
+    file_name: str = "Synthetic_Financial_datasets_log.csv"
 
     fraud_data: FraudDataset = FraudDataset(data_loader=data_loader,
                                             file_path=file_path_to_data,
@@ -26,11 +28,16 @@ def main() -> int:
     num_observations: int = 500000
 
     model: Model = Model(fraud_data_frame=fraud_data_frame)
-    epoch_loss_list: list[list[float]] = model.train_neural_network(num_observations=num_observations,
+    '''epoch_loss_list: list[list[float]] = model.train_neural_network(num_observations=num_observations,
                                                                     batch_size=batch_size)
     model.write_results(epoch_loss_list=epoch_loss_list)
     model.save_model_state()
-    model.launch_tensor_board()
+    model.launch_tensor_board()'''
+
+    # 
+    if_model: IFModel = IFModel(fraud_data_frame=fraud_data_frame)
+    if_model.detect()
+
     return 0
 
 

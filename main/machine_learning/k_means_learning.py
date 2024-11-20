@@ -21,10 +21,10 @@ class KMeansLearning:
         ------
         data_loader : any
             a data_loader object to help process data
-        
+
         file_path : str
             path to data
-        
+
         file_name : str
             name of data file
 
@@ -44,7 +44,7 @@ class KMeansLearning:
 
     def display_sample_of_data_points(self, num_data_points: int, x_axis_str: str, y_axis_str: str) -> None:
 
-        """ Displays a sample of the data provided in initialization 
+        """ Displays a sample of the data provided in initialization
         Params
         ------
         num_data_points : int
@@ -110,12 +110,12 @@ class KMeansLearning:
         Returns
         -------
         k_centroids : dataframe
-            a dataframe of length k representing random samples of the 
+            a dataframe of length k representing random samples of the
             original dataset
         """
 
         return self.data_frame.sample(n=self.k_value)
-    
+
     def euclidean_distance(self, a, b):
         """ returns the Euclidean distance between two points """
 
@@ -125,12 +125,12 @@ class KMeansLearning:
             total += (diff * diff)
 
         return math.sqrt(total)
-    
+
     def cluster_mean(self, cluster):
         """ Returns the mean value of the given cluster """
 
         return pd.Dataframe(cluster).mean(axis=1)
-    
+
     def execute_clustering(self, init_type="forgy"):
 
         # initializing centroids
@@ -167,4 +167,3 @@ class KMeansLearning:
 
                 if converged:
                     return clusters
-

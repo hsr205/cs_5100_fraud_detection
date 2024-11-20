@@ -1,0 +1,24 @@
+# Editor Specific files
+.vscode/
+.idea/
+
+# Mac/OSX
+.DS_Store
+
+# Default ignored files
+/shelf/
+/workspace.xml
+
+
+# compiled files
+__pycache__/
+.pyc
+
+# files that are too big
+.zip
+
+# Environments
+.env
+.venv
+env/
+venv/

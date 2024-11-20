@@ -2,10 +2,9 @@ from typing import Any
 
 from torch.utils.data import Dataset
 
-from main.logger import Logger
+from logger import Logger
 
 logger: Logger = Logger().get_logger()
-
 
 class FraudDataset(Dataset):
 

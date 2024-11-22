@@ -33,6 +33,7 @@ class IFModel:
        
     # Identifies anomalies in the data set based on amount
     def detect(self):
+        self.fraud_data_frame = self.fraud_data_frame.sort_values(by='isFraud', ascending=False).head(16000)
         df = self.fraud_data_frame # save original to compare with later
         self.preprocess()
 
@@ -51,6 +52,9 @@ class IFModel:
 
         self.fraud_data_frame.to_csv('fdf.csv')
 
+        self.vis_2d()
+        self.vis_3d()
+
         print(f"anomaly columns: {anomalies.columns}")
         print(f"df columns {df.columns}")
 
@@ -63,12 +67,6 @@ class IFModel:
         ]]
         
         combined_df.to_csv('combined.csv')
-
-
-
-
-
-
 
     # Visualizes IsolationForest in two dimensions (amount_norm and new_balance_origin_normalized)
     def vis_2d(self):
@@ -113,8 +111,8 @@ class IFModel:
         ax.legend()
 
         # Show the plot
-        plt.savefig('anomaly_detection_3d.png')
-        #plt.show()
+        #plt.savefig('anomaly_detection_3d.png')
+        plt.show()
 
         return anomalies
 

@@ -111,8 +111,6 @@ class DataPreprocessor:
 
         processed_observations: pd.DataFrame = self._preprocess_data_frame(input_dataframe=features_dataframe)
 
-        # logger.info(f"Columns = {processed_observations.columns}")
-
         features_array: np.array = processed_observations.values
 
         return features_array, labels_array

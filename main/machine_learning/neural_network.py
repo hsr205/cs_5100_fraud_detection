@@ -60,7 +60,7 @@ class DataPreprocessor:
         return testing_loader
 
     def _create_data_loader(self, features_tensor: torch.Tensor, labels_tensor: torch.Tensor,
-                            batch_size: int = 512) -> DataLoader:
+                            batch_size: int = 256) -> DataLoader:
         """
         Creates a DataLoader from feature / label tensors.
 
@@ -210,10 +210,10 @@ class NeuralNetwork(nn.Module):
         self.main = nn.Sequential(
             nn.Linear(in_features=self._input_size, out_features=self._hidden_input_size),
             nn.ReLU(True),
-            nn.Dropout(0.2),
+            nn.Dropout(0.3),
             nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size),
             nn.ReLU(True),
-            nn.Dropout(0.5),
+            nn.Dropout(0.4),
             nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size),
             nn.ReLU(True),
             nn.Linear(in_features=self._hidden_input_size, out_features=self._output_size)

@@ -29,13 +29,8 @@ def main() -> int:
     '''epoch_loss_list: list[list[float]] = model.train_neural_network(num_observations=num_observations,
                                                                     batch_size=batch_size)
     model.write_results(epoch_loss_list=epoch_loss_list)
-    model.save_modxel_state()
-    model.launch_tensor_board()'''
-
-    # 
-    if_model: IFModel = IFModel(fraud_data_frame=fraud_data_frame)
-    if_model.detect()
-
+    model.save_model_state()
+    model.launch_tensor_board()
     return 0
 
 

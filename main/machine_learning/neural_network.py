@@ -3,6 +3,8 @@ import sys
 from dataclasses import dataclass
 from datetime import datetime
 
+import numpy as np
+
 # adding path to sys for local module imports
 sys.path.append(os.path.join(os.getcwd(), "main"))
 
@@ -13,7 +15,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from static.constants import Constants
 from torch import nn, Tensor, device
-from torch.nn import BCELoss
+from torch.nn import BCEWithLogitsLoss
 from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
 from tqdm import tqdm
@@ -24,170 +26,291 @@ logger: Logger = Logger().get_logger()
 
 
 class DataPreprocessor:
-    random_seed: int = 42
-
     def __init__(self, fraud_data_frame: pd.DataFrame):
         self.fraud_data_frame = fraud_data_frame
 
-    def get_tensor_dataset(self, num_observations: int, batch_size: int = 64):
+    def get_training_loader(self) -> DataLoader:
         """
-        Combines the x-features / y-labels of the data set into a single DataLoader object
+        Prepares and returns a DataLoader object for the training dataset.
 
-        :param num_observations: Number of observations from the original dataset to include in tensor object
-        :param batch_size: The size of the inputs to inject into the one at one time
-        :return: a DataLoader object that is compatible with the PyTorch framework for model creation
+        :return: DataLoader: A DataLoader object containing the training data.
         """
 
-        features: Tensor = self.get_x_labels_as_tensor(num_observations=num_observations)
-        outputs: Tensor = self.get_y_labels_as_tensor(num_observations=num_observations)
-        dataset: TensorDataset = TensorDataset(features, outputs)
-        dataloader: DataLoader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-        return dataloader
+        features_array, labels_array = self._prepare_training_data()
+        features_tensor, labels_tensor = self._convert_to_tensors(features_array=features_array,
+                                                                  labels_array=labels_array)
 
-    def get_y_labels_as_tensor(self, num_observations: int) -> Tensor:
+        training_loader: DataLoader = self._create_data_loader(features_tensor=features_tensor,
+                                                               labels_tensor=labels_tensor)
+        return training_loader
+
+    def get_test_loader(self) -> DataLoader:
         """
-        Retrieves the isFraud column (series) and takes a predefined sample size (100,000 observations).
-        Converts the isFraud series to a tensor object.
+        Prepares and returns a DataLoader object for the test dataset.
 
-        :return: a tensor object that will be fed as labels ('y' values) to the neural network (model)
-        """
-
-        data_series: pd.Series = self.fraud_data_frame[Constants.IS_FRAUD].sample(n=num_observations,
-                                                                                  random_state=self.random_seed)
-
-        # We convert the row vector in a column vector in order to ensure that
-        # the shape matches the shape of the model's output tensor
-        tensor = torch.tensor(data_series.values, dtype=torch.float32).unsqueeze(1)
-
-        return tensor
-
-    def get_x_labels_as_tensor(self, num_observations: int) -> Tensor:
-        """
-        Retrieves the all feature columns ('x' values) and takes a predefined sample size (100,000 observations).
-        Converts the feature columns to a tensor object.
-
-        :return: a tensor object that will be fed as features ('x' values) to the neural network (model)
+        :return: DataLoader: A DataLoader object containing the test data.
         """
 
-        data_frame: pd.DataFrame = self.preprocess_data_frame(num_observations=num_observations)
+        features_array, labels_array = self._prepare_testing_data()
+        features_tensor, labels_tensor = self._convert_to_tensors(features_array=features_array,
+                                                                  labels_array=labels_array)
 
-        tensor = torch.tensor(data_frame.values, dtype=torch.float32)
+        testing_loader: DataLoader = self._create_data_loader(features_tensor=features_tensor,
+                                                              labels_tensor=labels_tensor)
+        return testing_loader
 
-        return tensor
+    def _create_data_loader(self, features_tensor: torch.Tensor, labels_tensor: torch.Tensor,
+                            batch_size: int = 512) -> DataLoader:
+        """
+        Creates a DataLoader from feature / label tensors.
 
-    def preprocess_data_frame(self, num_observations: int) -> pd.DataFrame:
+        :param: features_tensor (torch.Tensor): features tensor.
+        :param: labels_tensor (torch.Tensor): labels tensor.
+        :param: batch_size (int): Batch size for DataLoader.
+
+        :returns:DataLoader: A PyTorch DataLoader for the to be used in model training / testing.
+        """
+        dataset: torch.TensorDataset = TensorDataset(features_tensor, labels_tensor)
+        data_loader: torch.DataLoader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        return data_loader
+
+    def _convert_to_tensors(self, features_array: np.ndarray, labels_array: np.ndarray) -> tuple[
+        torch.Tensor, torch.Tensor]:
+        """
+        Converts feature and label arrays to PyTorch tensors.
+
+       :param: features_array The input array containing feature data.
+       :param: labels_array  The input array containing label data.
+
+        :return: tuple[torch.Tensor, torch.Tensor]: A tuple containing the converted feature tensor / label tensors.
+        """
+        features_tensor: torch.Tensor = torch.tensor(features_array, dtype=torch.float32)
+        labels_tensor: torch.Tensor = torch.tensor(labels_array, dtype=torch.float32).unsqueeze(1)
+        return features_tensor, labels_tensor
+
+    def _prepare_training_data(self, n_samples: int = 6000) -> tuple[np.array, np.array]:
+        """
+        Extracts fraud and valid observations, shuffles the data,
+        and separates features and labels.
+
+        :param: n_samples (int): Number of samples to extract for each class.
+        :returns: Tuple[np.ndarray, np.ndarray]: Features and labels as NumPy arrays.
         """
 
-        Takes a 'random' sample of size "sample_size" (defaulted is 100,000) observations
-        and conducts data preprocessing on each of the features
+        dataframe: pd.DataFrame = self.fraud_data_frame
 
+        fraud_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 1].head(n_samples)
+        valid_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 0].head(n_samples)
+
+        combined_observations: pd.DataFrame = pd.concat([fraud_observations, valid_observations]).sample(
+            frac=1).reset_index(
+            drop=True)
+
+        labels_array: np.array = combined_observations[Constants.IS_FRAUD].values
+        features_dataframe: pd.DataFrame = combined_observations.drop(columns=[Constants.IS_FRAUD])
+
+        processed_observations: pd.DataFrame = self._preprocess_data_frame(input_dataframe=features_dataframe)
+
+        features_array: np.array = processed_observations.values
+
+        return features_array, labels_array
+
+    def _prepare_testing_data(self, n_samples: int = 6000) -> tuple[np.array, np.array]:
+        """
+        Extracts fraud and valid observations, shuffles the data,
+        and separates features and labels.
+
+        :param: n_samples (int): Number of samples to extract for each class.
+        :returns: Tuple[np.ndarray, np.ndarray]: Features and labels as NumPy arrays.
+        """
+        max_rows: int = 8000
+        dataframe: pd.DataFrame = self.fraud_data_frame
+
+        fraud_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 1][n_samples:max_rows]
+        valid_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 0][n_samples:max_rows]
+
+        combined_observations: pd.DataFrame = pd.concat([fraud_observations, valid_observations]).sample(
+            frac=1).reset_index(
+            drop=True)
+
+        labels_array: np.array = combined_observations[Constants.IS_FRAUD].values
+        features_dataframe: pd.DataFrame = combined_observations.drop(columns=[Constants.IS_FRAUD])
+
+        processed_observations: pd.DataFrame = self._preprocess_data_frame(input_dataframe=features_dataframe)
+        features_array: np.array = processed_observations.values
+
+        return features_array, labels_array
+
+    def _preprocess_data_frame(self, input_dataframe: pd.DataFrame) -> pd.DataFrame:
+        """
+
+        Takes in a dataframe and preprocesses the values for later model consumption
+
+        :param: input_dataframe: the input dataframe that the method will
         :return: pandas data frame containing the preprocesses data
         """
 
-        # Lists columns of the data set to include
-        # Potentially add columns nameOrig and nameDest (account numbers) to future analysis
-        column_list: list[str] = [Constants.TRANSACTION_TYPE,
-                                  Constants.AMOUNT,
-                                  Constants.NEW_TRANSACTION_BALANCE,
-                                  Constants.NEW_RECIPIENT_BALANCE]
+        column_list: list[str] = self._get_column_list()
+        dataframe: pd.DataFrame = input_dataframe[column_list]
+        preprocessor: ColumnTransformer = self._get_column_transformer()
+        processed_data = preprocessor.fit_transform(dataframe)
 
-        data_frame: pd.DataFrame = self.fraud_data_frame[column_list].sample(n=num_observations,
-                                                                             random_state=self.random_seed)
+        result_column_list: list[str] = self._get_result_column_list()
 
-        # Specifies the transformations each column needs to undergo
-        preprocessor = ColumnTransformer(
+        return pd.DataFrame(processed_data, columns=result_column_list)
+
+    def _get_result_column_list(self) -> list[str]:
+        return ['amount_norm',
+                'type_PAYMENT', 'type_TRANSFER', 'type_CASH_OUT', 'type_DEBIT', 'type_CASH_IN',
+                'new_balance_origin_normalized', 'new_balance_destination_normalized']
+
+    def _get_column_transformer(self) -> ColumnTransformer:
+        """
+        Creates a ColumnTransformer objects that converts the values of the dataframe into values that will later become a tensor
+
+        :returns: ColumnTransformer: a column transformer object
+        """
+
+        column_transformer: ColumnTransformer = ColumnTransformer(
             transformers=[
-                ('amount_normalized', StandardScaler(), [Constants.AMOUNT]),
-                ('type_encoded', OneHotEncoder(), [Constants.TRANSACTION_TYPE]),
-                ('new_balance_origin_normalized', StandardScaler(), [Constants.NEW_TRANSACTION_BALANCE]),
-                ('new_balance_destination_normalized', StandardScaler(), [Constants.NEW_RECIPIENT_BALANCE])
+                (Constants.AMOUNT_NORMALIZED, StandardScaler(), [Constants.AMOUNT]),
+                (Constants.TYPE_ENCODED, OneHotEncoder(), [Constants.TRANSACTION_TYPE]),
+                (Constants.NEW_BALANCE_ORIGIN_NORMALIZED, StandardScaler(), [Constants.NEW_TRANSACTION_BALANCE]),
+                (Constants.NEW_BALANCE_DESTINATION_NORMALIZED, StandardScaler(), [Constants.NEW_RECIPIENT_BALANCE])
             ],
 
             # Allows for columns that aren't being preprocessed to be included in the final data set
             remainder='passthrough'
         )
+        return column_transformer
 
-        processed_data = preprocessor.fit_transform(data_frame)
+    def _get_column_list(self) -> list[str]:
+        """
+        Creates a list of all column names to be included in the dataframe
 
-        # Convert back to DataFrame with column names for easier viewing
-        result_column_list: list[str] = ['amount_norm',
-                                         'type_PAYMENT', 'type_TRANSFER', 'type_CASH_OUT', 'type_DEBIT', 'type_CASH_IN',
-                                         'new_balance_origin_normalized', 'new_balance_destination_normalized']
+        :returns: List[str]: string list of all column names
+        """
 
-        return pd.DataFrame(processed_data, columns=result_column_list)
+        return [Constants.TRANSACTION_TYPE,
+                Constants.AMOUNT,
+                Constants.NEW_TRANSACTION_BALANCE,
+                Constants.NEW_RECIPIENT_BALANCE]
 
 
 class NeuralNetwork(nn.Module):
     """
-    A feedforward neural network that contains an input layer, hidden layer and an output layer
+    A feedforward neural network that contains an input layer, two hidden layers, two drop out layers and an output layer
     """
-    tensor: Tensor = Tensor()
+    _input_size: int = 8
+    _hidden_input_size: int = 8
+    _output_size: int = 1
 
-    def __init__(self, input_size: int, hidden_input_size: int, hidden_output_size: int):
+    def __init__(self):
         super(NeuralNetwork, self).__init__()
-        # dropout layer, will randomly zero an element of the input tensor with probability 0.2
-        self.dropout = nn.Dropout(0.2)
-        # Specifies the input_size (default = 8) and the number of nodes in the output layer (8)
-        self.input_layer = nn.Linear(input_size, hidden_input_size)
-        # Indicates that after the input layer is completed the ReLU (rectified linear unit)
-        # activation function is being called on the first hidden layer's nodes
-        self.relu1 = nn.ReLU()
-        # Second hidden layer indicating that the number of input nodes is 10 and the number of output nodes is 5
-        self.hidden_layer = nn.Linear(hidden_input_size, hidden_output_size)
-        # a second dropout layer, will randomly zero a hidden neuron probability 0.5
-        self.dropout = nn.Dropout(0.5)
-        self.relu2 = nn.ReLU()  # ReLU (rectified linear unit) used again on the hidden layer
-        self.output_layer = nn.Linear(hidden_output_size, 1)  # Output layer consisting of a single node
-        # Applying a sigmoid function on the output layer to retrieve a probability from the output node
-        self.sigmoid = nn.Sigmoid()
+        self.main = nn.Sequential(
+            nn.Linear(in_features=self._input_size, out_features=self._hidden_input_size),
+            nn.ReLU(True),
+            nn.Dropout(0.2),
+            nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size),
+            nn.ReLU(True),
+            nn.Dropout(0.5),
+            nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size),
+            nn.ReLU(True),
+            nn.Linear(in_features=self._hidden_input_size, out_features=self._output_size)
+        )
 
     def forward(self, tensor_obj: Tensor) -> Tensor:
-        drop_out_layer1: Tensor = self.dropout(tensor_obj)
-        input_layer: Tensor = self.relu1(self.input_layer(drop_out_layer1))
-        hidden_layer: Tensor = self.relu2(self.hidden_layer(input_layer))
-        drop_out_layer2: Tensor = self.dropout(hidden_layer)
-        output_layer: Tensor = self.sigmoid(self.output_layer(drop_out_layer2))
-        return output_layer
+        return self.main(tensor_obj)
 
 
 @dataclass
 class Model:
+    model_file_path: str
 
-    def __init__(self, fraud_data_frame: pd.DataFrame, input_size: int = 8, hidden_input_size: int = 8,
-                 hidden_output_size: int = 5):
-        self.device = self.get_device()
-        self.neural_network = NeuralNetwork(input_size, hidden_input_size, hidden_output_size).to(self.device)
-        self.criterion = BCELoss()
+    def __init__(self, fraud_data_frame: pd.DataFrame):
+        self.device = self._get_device()
+        self.neural_network = NeuralNetwork().to(self.device)
+        self.criterion = BCEWithLogitsLoss()
         self.optimizer = torch.optim.Adam(self.neural_network.parameters(), lr=0.001)
-        self.fraud_data_frame = fraud_data_frame
-        self.data_preprocessor = DataPreprocessor(fraud_data_frame=self.fraud_data_frame)
+        self.data_preprocessor = DataPreprocessor(fraud_data_frame=fraud_data_frame)
 
-    def train_neural_network(self, num_observations: int, batch_size: int = 64) -> list[list[float]]:
-        num_epochs = 10
+    def train_neural_network(self, epochs: int) -> list[list[float]]:
+
         epoch_loss_matrix: list[list[float]] = [[]]
-        logger.info(f"Batch Size: {batch_size}")
-        logger.info(f"Number of Data Set Observations Used: {num_observations:,}")
+        training_loader: DataLoader = self.data_preprocessor.get_training_loader()
+
+        logger.info("Starting Neural Network Training")
         logger.info("===============================================")
-        for epoch in tqdm(range(num_epochs), "Neural Network Training Progress"):
+
+        for epoch in tqdm(range(epochs), "Neural Network Training Progress"):
             running_loss: float = 0.0
             epoch_loss_list = []
-            for inputs, labels in self.data_preprocessor.get_tensor_dataset(num_observations=num_observations,
-                                                                            batch_size=batch_size):
+            for inputs, labels in training_loader:
                 inputs = inputs.to(self.device)  # Move tensor inputs to same devise the Model is located
                 inputs = inputs.view(inputs.size(0), -1)
                 # Move tensor labels to same devise the Model is located and convert values to 32-bit
                 labels = labels.to(self.device, dtype=torch.float32)
-                self.optimizer.zero_grad()  # Zero the gradients as we are going through a new interation
+                self.optimizer.zero_grad()  # Zero the gradients as we are going through a new iteration
                 outputs = self.neural_network(inputs)  # Forward pass through the neural network
                 loss = self.criterion(outputs, labels)  # Compute the loss function based of BCELoss
                 loss.backward()  # Backward pass (compute gradients) altering the weights and biases
                 self.optimizer.step()  # Update parameters
                 running_loss += loss.item()
                 epoch_loss_list.append(running_loss)
-            epoch_loss: float = running_loss / (num_observations / batch_size)
+
             epoch_loss_matrix.append(epoch_loss_list)
-            logger.info(f'Epoch {epoch + 1}/{num_epochs}, Loss: {epoch_loss:.4f}')
+            logger.info(f'Epoch {epoch + 1}/{epochs}, Loss: {running_loss:.4f}')
+
+        logger.info("===============================================")
+        logger.info("Completed Neural Network Training")
+        logger.info("===============================================")
+
         return epoch_loss_matrix
+
+    def test_neural_network(self) -> None:
+
+        neural_network_obj: NeuralNetwork = NeuralNetwork()
+        neural_network_obj.load_state_dict(
+            torch.load(self.model_file_path, map_location=self.device, weights_only=True))
+        neural_network_obj.to(self.device)
+        neural_network_obj.eval()
+
+        testing_loader: DataLoader = self.data_preprocessor.get_test_loader()
+
+        logger.info("Starting Neural Network Testing")
+        logger.info("===============================================")
+
+        total_observations: int = 0
+        correctly_predicted_observations: int = 0
+
+        with torch.no_grad():
+            for inputs, labels in tqdm(testing_loader, "Neural Network Testing Progress"):
+                input_tensor: torch.Tensor = inputs.to(self.device)
+                target_tensor: torch.Tensor = labels.to(self.device)
+
+                neural_network_output = neural_network_obj(input_tensor)
+
+                # Apply sigmoid to convert logits to probabilities
+                probabilities = torch.sigmoid(neural_network_output)
+
+                # Apply threshold to get binary predictions
+                predicted_values = (probabilities >= 0.5).float()
+
+                # Flatten tensors to ensure they are 1D and of the same shape
+                predicted_values = predicted_values.view(-1)
+                target_tensor = target_tensor.view(-1)
+
+                correctly_predicted_observations += (predicted_values == target_tensor).sum().item()
+                total_observations += target_tensor.size(0)
+
+        logger.info("==============================================")
+        logger.info(f"Total Observations = {total_observations:,}")
+        logger.info(f"Correctly Predicted Observations = {correctly_predicted_observations:,}")
+        logger.info(f'Neural Network Accuracy: {(correctly_predicted_observations / total_observations) * 100:.2f}%')
+        logger.info("==============================================")
+
+        logger.info("Completed Neural Network Testing")
+        logger.info("==============================================")
 
     def write_results(self, epoch_loss_list: list[list[float]]) -> None:
         """
@@ -216,18 +339,18 @@ class Model:
         file_name: str = f"model_{current_date_time}.pth"
         full_output_path: str = str(output_directory_path / file_name)
         torch.save(self.neural_network.state_dict(), full_output_path)
+        self.model_file_path = full_output_path
         logger.info(f"Saved neural network state: {full_output_path}")
 
-    @staticmethod
-    def launch_tensor_board() -> None:
+    def launch_tensor_board(self) -> None:
         """
         Used in to launch TensorBoard, a tool for visualizing machine learning metrics from our neural network output
         """
         logger.info("Launching TensorBoard:")
-        os.system("tensorboard --logdir=main/machine_learning/neural_network_execution_results")
+        output_directory_path: Path = Path.cwd() / "machine_learning" / "neural_network_execution_results"
+        os.system("tensorboard --logdir=" + str(output_directory_path))
 
-    @staticmethod
-    def get_device() -> device:
+    def _get_device(self) -> device:
         """
         Assigns the device the model with run on
 

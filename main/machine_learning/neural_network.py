@@ -99,7 +99,6 @@ class DataPreprocessor:
 
         dataframe: pd.DataFrame = self.fraud_data_frame
 
-
         fraud_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 1].head(n_samples)
         valid_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 0].head(n_samples)
 
@@ -210,24 +209,20 @@ class NeuralNetwork(nn.Module):
 
     def __init__(self):
         super(NeuralNetwork, self).__init__()
-        self.input_layer = nn.Linear(in_features=self._input_size, out_features=self._hidden_input_size)
-        self.dropout_layer_1 = nn.Dropout(0.2)
-        self.relu1 = nn.ReLU()
-        self.hidden_layer_1 = nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size)
-        self.dropout_layer_2 = nn.Dropout(0.5)
-        self.relu2 = nn.ReLU()
-        self.hidden_layer_2 = nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size)
-        self.relu3 = nn.ReLU()
-        self.output_layer = nn.Linear(in_features=self._hidden_input_size, out_features=self._output_size)
+        self.main = nn.Sequential(
+            nn.Linear(in_features=self._input_size, out_features=self._hidden_input_size),
+            nn.ReLU(True),
+            nn.Dropout(0.2),
+            nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size),
+            nn.ReLU(True),
+            nn.Dropout(0.5),
+            nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size),
+            nn.ReLU(True),
+            nn.Linear(in_features=self._hidden_input_size, out_features=self._output_size)
+        )
 
     def forward(self, tensor_obj: Tensor) -> Tensor:
-        input_layer: Tensor = self.relu1(self.input_layer(tensor_obj))
-        drop_out_layer_1: Tensor = self.dropout_layer_1(input_layer)
-        hidden_layer_1: Tensor = self.relu2(self.hidden_layer_1(drop_out_layer_1))
-        drop_out_layer_2: Tensor = self.dropout_layer_2(hidden_layer_1)
-        hidden_layer_2: Tensor = self.relu3(self.hidden_layer_2(drop_out_layer_2))
-        output_layer: Tensor = self.output_layer(hidden_layer_2)
-        return output_layer
+        return self.main(tensor_obj)
 
 
 @dataclass
@@ -257,7 +252,7 @@ class Model:
                 inputs = inputs.view(inputs.size(0), -1)
                 # Move tensor labels to same devise the Model is located and convert values to 32-bit
                 labels = labels.to(self.device, dtype=torch.float32)
-                self.optimizer.zero_grad()  # Zero the gradients as we are going through a new interation
+                self.optimizer.zero_grad()  # Zero the gradients as we are going through a new iteration
                 outputs = self.neural_network(inputs)  # Forward pass through the neural network
                 loss = self.criterion(outputs, labels)  # Compute the loss function based of BCELoss
                 loss.backward()  # Backward pass (compute gradients) altering the weights and biases

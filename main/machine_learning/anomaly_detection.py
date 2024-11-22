@@ -14,7 +14,7 @@ import seaborn as sns
 
 import matplotlib.pyplot as plt
 
-from .neural_network import DataPreprocessor as dp
+from .neural_network import DataPreprocessor
 
 # Represents an Isolation Forest Model to be used for anomaly detection
 class IFModel:
@@ -26,13 +26,14 @@ class IFModel:
     # preprocess dataframe
     def preprocess(self):
         print(f"Anomaly value counts before processing: {self.fraud_data_frame['isFraud'].value_counts()}")
-        self.fraud_data_frame = self.fraud_data_frame.sort_values(by=['isFraud'], ascending=False)
-        self.fraud_data_frame = dp.preprocess_data_frame(self, 16000) # gets all anomalies (~8000) and equal amount of non-anomaly
+        #self.fraud_data_frame = self.fraud_data_frame.sort_values(by=['isFraud'], ascending=False)
+        dp = DataPreprocessor(self.fraud_data_frame)
+        self.fraud_data_frame = dp._preprocess_data_frame(self.fraud_data_frame) # gets all anomalies (~8000) and equal amount of non-anomaly
         self.fraud_data_frame.sort_index()
-        print(f"Anomaly value counts after processing: {self.fraud_data_frame['anomaly'].value_counts()}")
-        
+       
     # Identifies anomalies in the data set based on amount
     def detect(self):
+        df = self.fraud_data_frame # save original to compare with later
         self.preprocess()
 
         # Select features for anomaly detection
@@ -41,17 +42,31 @@ class IFModel:
 
         # Apply Isolation Forest
         iso_forest = IsolationForest(n_estimators=100, contamination=0.05, random_state=42)
-        self.fraud_data_frame['anomaly'] = iso_forest.fit_predict(X)
+        self.fraud_data_frame['predictedFraud'] = iso_forest.fit_predict(X)
 
         # Convert -1 to 1 for anomalies, and 1 to 0 for normal points
-        self.fraud_data_frame['anomaly'] = self.fraud_data_frame['anomaly'].apply(lambda x: 1 if x == -1 else 0)
+        self.fraud_data_frame['predictedFraud'] = self.fraud_data_frame['predictedFraud'].apply(lambda x: 1 if x == -1 else 0)
+
+        anomalies = self.fraud_data_frame[self.fraud_data_frame['predictedFraud'] == 1]
 
         self.fraud_data_frame.to_csv('fdf.csv')
-        anomalies_2d = self.vis_2d()
-        anomalies_3d = self.vis_3d()
 
-        anomalies_2d.to_csv('a2d.csv')
-        anomalies_3d.to_csv('a3d.csv')
+        print(f"anomaly columns: {anomalies.columns}")
+        print(f"df columns {df.columns}")
+
+        combined_df = pd.merge(anomalies, df, left_on=features,
+                               right_on=['amount', 'newbalanceOrig', 'newbalanceDest'],
+                               how='left')
+        
+        combined_df = combined_df[[
+            'amount_norm', 'new_balance_origin_normalized', 'new_balance_destination_normalized', 'predictedFraud', 'isFraud'
+        ]]
+        
+        combined_df.to_csv('combined.csv')
+
+
+
+
 
 
 
@@ -59,15 +74,16 @@ class IFModel:
     def vis_2d(self):
         # Visualize anomalies
         plt.figure(figsize=(10, 6))
-        sns.scatterplot(data=self.fraud_data_frame, x='amount_norm', y='new_balance_origin_normalized', hue='anomaly', palette={0: 'green', 1: 'red'}, s=100, alpha=0.6)
+        sns.scatterplot(data=self.fraud_data_frame, x='amount_norm', y='new_balance_origin_normalized', hue='predictedFraud', palette={0: 'green', 1: 'red'}, s=100, alpha=0.6)
         plt.title("Anomaly Detection using Isolation Forest")
         plt.xlabel("Amount")
         plt.ylabel("New Balance Origin")
+
         plt.savefig('anomaly_detection_2d.png')
         #plt.show()
 
         # Inspect anomalies
-        anomalies = self.fraud_data_frame[self.fraud_data_frame['anomaly'] == 1]
+        anomalies = self.fraud_data_frame[self.fraud_data_frame['predictedFraud'] == 1]
         return anomalies
 
     # Visualizes IsolationForest in three dimensions (amount_norm, new_balance_origin_normalized, and new_balance_destination_normalized)
@@ -78,12 +94,12 @@ class IFModel:
         ax = fig.add_subplot(111, projection='3d')
 
         # Plot normal points
-        normal_points = self.fraud_data_frame[self.fraud_data_frame['anomaly'] == 0]
+        normal_points = self.fraud_data_frame[self.fraud_data_frame['predictedFraud'] == 0]
         ax.scatter(normal_points['amount_norm'], normal_points['new_balance_origin_normalized'], 
                 normal_points['new_balance_destination_normalized'], color='green', s=50, alpha=0.6, label='Normal')
 
         # Plot anomalous points
-        anomalies = self.fraud_data_frame[self.fraud_data_frame['anomaly'] == 1]
+        anomalies = self.fraud_data_frame[self.fraud_data_frame['predictedFraud'] == 1]
         ax.scatter(anomalies['amount_norm'], anomalies['new_balance_origin_normalized'], 
                 anomalies['new_balance_destination_normalized'], color='red', s=50, alpha=0.6, label='Anomalies')
 

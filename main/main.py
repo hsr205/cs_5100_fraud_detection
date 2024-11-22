@@ -24,14 +24,12 @@ def main() -> int:
     fraud_data_frame: pd.DataFrame = fraud_data.data_loader.get_data_frame_from_zip_file(file_path=file_path_to_data,
                                                                                          file_name=file_name)
 
-    batch_size: int = 128
-    num_observations: int = 500000
 
     model: Model = Model(fraud_data_frame=fraud_data_frame)
     '''epoch_loss_list: list[list[float]] = model.train_neural_network(num_observations=num_observations,
                                                                     batch_size=batch_size)
     model.write_results(epoch_loss_list=epoch_loss_list)
-    model.save_model_state()
+    model.save_modxel_state()
     model.launch_tensor_board()'''
 
     # 

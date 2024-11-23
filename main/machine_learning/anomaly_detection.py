@@ -7,8 +7,10 @@ from data.fraud_data import FraudDataset
 
 from sklearn.ensemble import IsolationForest
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import confusion_matrix
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from static.constants import Constants
+from sklearn.metrics import confusion_matrix, f1_score
 from sklearn.utils import resample
 import seaborn as sns
 
@@ -16,26 +18,50 @@ import matplotlib.pyplot as plt
 
 from .neural_network import DataPreprocessor
 
+class IFProcessor(DataPreprocessor):
+
+    # Override DataPreprocessor to include 'isFraud' column for frequency analysis
+    def _get_column_list(self) -> list[str]:
+        """
+        Creates a list of all column names to be included in the dataframe
+
+        :returns: List[str]: string list of all column names
+        """
+
+        return [Constants.TRANSACTION_TYPE,
+                Constants.AMOUNT,
+                Constants.NEW_TRANSACTION_BALANCE,
+                Constants.NEW_RECIPIENT_BALANCE,
+                Constants.IS_FRAUD]
+
+    def _get_result_column_list(self) -> list[str]:
+        return ['amount_norm',
+                'type_PAYMENT', 'type_TRANSFER', 'type_CASH_OUT', 'type_DEBIT', 'type_CASH_IN',
+                'new_balance_origin_normalized', 'new_balance_destination_normalized', 'isFraud']
+
+
+
 # Represents an Isolation Forest Model to be used for anomaly detection
 class IFModel:
     def __init__(self, fraud_data_frame: pd.DataFrame):
         self.fraud_data_frame = fraud_data_frame
         self.random_seed = 42
 
-
     # preprocess dataframe
     def preprocess(self):
-        print(f"Anomaly value counts before processing: {self.fraud_data_frame['isFraud'].value_counts()}")
-        #self.fraud_data_frame = self.fraud_data_frame.sort_values(by=['isFraud'], ascending=False)
-        dp = DataPreprocessor(self.fraud_data_frame)
-        self.fraud_data_frame = dp._preprocess_data_frame(self.fraud_data_frame) # gets all anomalies (~8000) and equal amount of non-anomaly
+        ifp = IFProcessor(self.fraud_data_frame)
+        self.fraud_data_frame = ifp._preprocess_data_frame(self.fraud_data_frame) # gets all anomalies (~8000) and equal amount of non-anomaly
         self.fraud_data_frame.sort_index()
        
     # Identifies anomalies in the data set based on amount
     def detect(self):
         self.fraud_data_frame = self.fraud_data_frame.sort_values(by='isFraud', ascending=False).head(16000)
-        df = self.fraud_data_frame # save original to compare with later
         self.preprocess()
+
+        # Create ID column to track individual transactions after the model is trained and evaluated
+        self.fraud_data_frame['ID'] = range(1, len(self.fraud_data_frame) + 1)
+        df = self.fraud_data_frame.copy(deep=False) # save original to compare with later
+        self.fraud_data_frame.drop('isFraud', axis=1, inplace=True) # drop isFraud for supervised learning
 
         # Select features for anomaly detection
         features = ['amount_norm', 'new_balance_origin_normalized', 'new_balance_destination_normalized']
@@ -48,25 +74,22 @@ class IFModel:
         # Convert -1 to 1 for anomalies, and 1 to 0 for normal points
         self.fraud_data_frame['predictedFraud'] = self.fraud_data_frame['predictedFraud'].apply(lambda x: 1 if x == -1 else 0)
 
-        anomalies = self.fraud_data_frame[self.fraud_data_frame['predictedFraud'] == 1]
-
-        self.fraud_data_frame.to_csv('fdf.csv')
-
         self.vis_2d()
         self.vis_3d()
 
-        print(f"anomaly columns: {anomalies.columns}")
-        print(f"df columns {df.columns}")
+        combined_df = pd.merge(self.fraud_data_frame, df, on='ID', how='left')
+        
+        #combined_df.to_csv('final_df.csv')
 
-        combined_df = pd.merge(anomalies, df, left_on=features,
-                               right_on=['amount', 'newbalanceOrig', 'newbalanceDest'],
-                               how='left')
-        
-        combined_df = combined_df[[
-            'amount_norm', 'new_balance_origin_normalized', 'new_balance_destination_normalized', 'predictedFraud', 'isFraud'
-        ]]
-        
-        combined_df.to_csv('combined.csv')
+        # Calculate accuracy
+        #accuracy = (combined_df['isFraud'] == combined_df['predictedFraud']).mean()
+        #print(f"Accuracy: {accuracy}")
+
+        # Calculate f1 score
+        # f1 = f1_score(combined_df['isFraud'], combined_df['predictedFraud'])
+        # print(f"F1 Score: {f1}")
+
+
 
     # Visualizes IsolationForest in two dimensions (amount_norm and new_balance_origin_normalized)
     def vis_2d(self):
@@ -80,9 +103,9 @@ class IFModel:
         plt.savefig('anomaly_detection_2d.png')
         #plt.show()
 
-        # Inspect anomalies
+        '''# Inspect anomalies
         anomalies = self.fraud_data_frame[self.fraud_data_frame['predictedFraud'] == 1]
-        return anomalies
+        return anomalies'''
 
     # Visualizes IsolationForest in three dimensions (amount_norm, new_balance_origin_normalized, and new_balance_destination_normalized)
     def vis_3d(self):
@@ -111,8 +134,8 @@ class IFModel:
         ax.legend()
 
         # Show the plot
-        #plt.savefig('anomaly_detection_3d.png')
-        plt.show()
+        plt.savefig('anomaly_detection_3d.png')
+        #plt.show()
 
-        return anomalies
+        '''return anomalies'''
 

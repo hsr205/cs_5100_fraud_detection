@@ -7,6 +7,25 @@ This documentation goes over the contents of the anomaly_detection.py file to id
 
 ---
 
+## Table of Contents
+
+- [Classes](#Classes)
+    - [IFProcessor](#IFProcessor)
+    - [IFModel](#IFModel)
+    - [Execution_Code](#Execution_Code)
+    - [Sample_Execution_Output](#Sample_Execution_Output)
+    - [Results](#Results)
+
+## Classes
+
+---
+
+## IFProcessor
+
+This is a subclass of `DataPreprocessor` from the file `neural_network.py`. It overrides two methods (`_get_column_list()` and `_get_result_column_list()`) to include the column `isFraud` to be used in calculating the accuracy and f1 score of the model
+
+---
+
 ## IFModel
 
 This class represents an Isolation Forest model to be used for anomaly detection.

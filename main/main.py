@@ -34,7 +34,7 @@ def main() -> int:
 
     # 
     if_model: IFModel = IFModel(fraud_data_frame=fraud_data_frame)
-    if_model.detect()
+    if_model.detect(16000) # change number of observations
 
     return 0
 

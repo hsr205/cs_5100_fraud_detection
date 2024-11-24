@@ -34,7 +34,9 @@ This class represents an Isolation Forest model to be used for anomaly detection
 
 `preprocess()` - Normalizes the data set with the `DataPreprocessor` class in `neural_network.py`.
 
-`detect()` - Identifies fraudulant transactions based on specified features .
+`detect()` - Identifies fraudulant transactions based on specified features.
+
+`view_classification(df)` - Visualizes the amount of true/false positive/negative classifications using a heatmap
 
 `vis_2d()` - Visualizes the IsolationForest in two dimensions, `amount_norm` and `new_balance_origin_normalized`
 

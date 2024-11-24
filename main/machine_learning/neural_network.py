@@ -224,6 +224,18 @@ class NeuralNetwork(nn.Module):
 
 
 @dataclass
+class Accuracy:
+    total_observations: int
+    correctly_predicted_observations: int
+    true_positive: int
+    false_positive: int
+    false_negative: int
+    true_negatives: int
+    neural_network_accuracy: float
+    f1_score: float
+
+
+@dataclass
 class Model:
     model_file_path: str
 
@@ -267,7 +279,7 @@ class Model:
 
         return epoch_loss_matrix
 
-    def test_neural_network(self) -> None:
+    def test_neural_network(self) -> Accuracy:
 
         neural_network_obj: NeuralNetwork = NeuralNetwork()
         neural_network_obj.load_state_dict(
@@ -282,9 +294,9 @@ class Model:
 
         total_observations: int = 0
 
-        false_pos: int = 0
-        true_pos: int = 0
-        false_neg: int = 0
+        false_positive: int = 0
+        true_positive: int = 0
+        false_negative: int = 0
 
         with torch.no_grad():
             for inputs, labels in tqdm(testing_loader, "Neural Network Testing Progress"):
@@ -303,25 +315,26 @@ class Model:
                 predicted_values = predicted_values.view(-1)
                 target_tensor = target_tensor.view(-1)
 
-                false_pos += ((predicted_values == 1) & (target_tensor == 0)).sum().item()
-                true_pos += ((predicted_values == 1) & (target_tensor == 1)).sum().item()
-                false_neg += ((predicted_values == 0) & (target_tensor == 1)).sum().item()
-                
+                false_positive += ((predicted_values == 1) & (target_tensor == 0)).sum().item()
+                true_positive += ((predicted_values == 1) & (target_tensor == 1)).sum().item()
+                false_negative += ((predicted_values == 0) & (target_tensor == 1)).sum().item()
+
                 total_observations += target_tensor.size(0)
 
-        logger.info("==============================================")
-        logger.info(f"Total Observations : {total_observations:,}")
-        logger.info(f"Correctly Predicted Observations : {total_observations - (false_neg + false_pos):,}")
-        logger.info(f"Number of False Positives : {false_pos:,}")
-        logger.info(f"Number of False Negatives : {false_neg:,}")
-        logger.info(f"Number of True Positives : {true_pos:,}")
-        logger.info(f"Number of True Negatives : {total_observations - (false_neg + false_pos+true_pos):,}")
-        logger.info(f"Neural Network Accuracy : {(total_observations - (false_neg + false_pos))/total_observations*100:,}%")
-        logger.info(f"Neural Network F_1 Score : {(2*true_pos)/(2*true_pos+false_pos+false_neg)}")
-        logger.info("==============================================")
+        accuracy_obj: Accuracy = Accuracy(
+            total_observations=total_observations,
+            correctly_predicted_observations=total_observations - (false_negative + false_positive),
+            true_positive=true_positive,
+            false_positive=false_positive,
+            false_negative=false_negative,
+            true_negatives=total_observations - (false_negative + false_positive + true_positive),
+            neural_network_accuracy=(total_observations - (false_negative + false_positive)) / total_observations * 100,
+            f1_score=(2 * true_positive) / (2 * true_positive + false_positive + false_negative) * 100
+        )
 
         logger.info("Completed Neural Network Testing")
-        logger.info("==============================================")
+
+        return accuracy_obj
 
     def write_results(self, epoch_loss_list: list[list[float]]) -> None:
         """
@@ -360,6 +373,20 @@ class Model:
         logger.info("Launching TensorBoard:")
         output_directory_path: Path = Path.cwd() / "machine_learning" / "neural_network_execution_results"
         os.system("tensorboard --logdir=" + str(output_directory_path))
+
+    def display_testing_results(self, accuracy_obj: Accuracy) -> None:
+        logger.info("==============================================")
+        logger.info(f"Total Observations : {accuracy_obj.total_observations:,}")
+        logger.info(f"Correctly Predicted Observations : {accuracy_obj.correctly_predicted_observations:,}")
+        logger.info(f"Number of False Positives : {accuracy_obj.false_positive:,}")
+        logger.info(f"Number of False Negatives : {accuracy_obj.false_negative:,}")
+        logger.info(f"Number of True Positives : {accuracy_obj.true_positive:,}")
+        logger.info(f"Number of True Negatives : {accuracy_obj.true_negatives:,}")
+        logger.info(
+            f"Neural Network Accuracy : {round(accuracy_obj.neural_network_accuracy, 2):,}%")
+        logger.info(
+            f"Neural Network F_1 Score : {round(accuracy_obj.f1_score, 2):,}%")
+        logger.info("==============================================")
 
     def _get_device(self) -> device:
         """

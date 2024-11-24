@@ -281,7 +281,10 @@ class Model:
         logger.info("===============================================")
 
         total_observations: int = 0
-        correctly_predicted_observations: int = 0
+
+        false_pos: int = 0
+        true_pos: int = 0
+        false_neg: int = 0
 
         with torch.no_grad():
             for inputs, labels in tqdm(testing_loader, "Neural Network Testing Progress"):
@@ -300,13 +303,21 @@ class Model:
                 predicted_values = predicted_values.view(-1)
                 target_tensor = target_tensor.view(-1)
 
-                correctly_predicted_observations += (predicted_values == target_tensor).sum().item()
+                false_pos += ((predicted_values == 1) & (target_tensor == 0)).sum().item()
+                true_pos += ((predicted_values == 1) & (target_tensor == 1)).sum().item()
+                false_neg += ((predicted_values == 0) & (target_tensor == 1)).sum().item()
+                
                 total_observations += target_tensor.size(0)
 
         logger.info("==============================================")
-        logger.info(f"Total Observations = {total_observations:,}")
-        logger.info(f"Correctly Predicted Observations = {correctly_predicted_observations:,}")
-        logger.info(f'Neural Network Accuracy: {(correctly_predicted_observations / total_observations) * 100:.2f}%')
+        logger.info(f"Total Observations : {total_observations:,}")
+        logger.info(f"Correctly Predicted Observations : {total_observations - (false_neg + false_pos):,}")
+        logger.info(f"Number of False Positives : {false_pos:,}")
+        logger.info(f"Number of False Negatives : {false_neg:,}")
+        logger.info(f"Number of True Positives : {true_pos:,}")
+        logger.info(f"Number of True Negatives : {total_observations - (false_neg + false_pos+true_pos):,}")
+        logger.info(f"Neural Network Accuracy : {(total_observations - (false_neg + false_pos))/total_observations*100:,}%")
+        logger.info(f"Neural Network F_1 Score : {(2*true_pos)/(2*true_pos+false_pos+false_neg)}")
         logger.info("==============================================")
 
         logger.info("Completed Neural Network Testing")

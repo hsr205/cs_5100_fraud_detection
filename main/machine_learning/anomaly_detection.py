@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from static.constants import Constants
-from sklearn.metrics import confusion_matrix, f1_score
+from sklearn.metrics import confusion_matrix, f1_score, accuracy_score
 from sklearn.utils import resample
 import seaborn as sns
 
@@ -63,32 +63,95 @@ class IFModel:
         df = self.fraud_data_frame.copy(deep=False) # save original to compare with later
         self.fraud_data_frame.drop('isFraud', axis=1, inplace=True) # drop isFraud for supervised learning
 
+
         # Select features for anomaly detection
         features = ['amount_norm', 'new_balance_origin_normalized', 'new_balance_destination_normalized']
         X = self.fraud_data_frame[features]
 
         # Apply Isolation Forest
-        iso_forest = IsolationForest(n_estimators=100, contamination=0.05, random_state=42)
+        iso_forest = IsolationForest(n_estimators=132, contamination=0.05, max_samples=256, random_state=42)
         self.fraud_data_frame['predictedFraud'] = iso_forest.fit_predict(X)
 
         # Convert -1 to 1 for anomalies, and 1 to 0 for normal points
         self.fraud_data_frame['predictedFraud'] = self.fraud_data_frame['predictedFraud'].apply(lambda x: 1 if x == -1 else 0)
 
-        self.vis_2d()
-        self.vis_3d()
+        #self.vis_2d()
+        #elf.vis_3d()
 
         combined_df = pd.merge(self.fraud_data_frame, df, on='ID', how='left')
         
         #combined_df.to_csv('final_df.csv')
 
         # Calculate accuracy
-        #accuracy = (combined_df['isFraud'] == combined_df['predictedFraud']).mean()
-        #print(f"Accuracy: {accuracy}")
+        accuracy = (combined_df['isFraud'] == combined_df['predictedFraud']).mean()
+        print(f"Accuracy: {accuracy}")
 
         # Calculate f1 score
-        # f1 = f1_score(combined_df['isFraud'], combined_df['predictedFraud'])
-        # print(f"F1 Score: {f1}")
+        f1 = f1_score(combined_df['isFraud'], combined_df['predictedFraud'])
+        print(f"F1 Score: {f1}")
 
+    def find_best(self):
+        # Hyperparameter grid
+        n_estimators_range = [50, 100, 150, 200]
+        max_samples_range = [0.3, 0.5, 0.8, 1.0]
+        contamination_range = [0.01, 0.05, 0.1, 0.15]
+
+        # Prepare a grid to store the results (accuracy for each combination of hyperparameters)
+        results = []
+
+        # Try all combinations of hyperparameters
+        for n_estimators in n_estimators_range:
+            for max_samples in max_samples_range:
+                for contamination in contamination_range:
+                    # Train IsolationForest with the current hyperparameters
+                    model = IsolationForest(n_estimators=n_estimators, 
+                                            max_samples=max_samples, 
+                                            contamination=contamination, 
+                                            random_state=42)
+                    
+                    # Split the data (train and test sets)
+                    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+                    
+                    # Fit the model
+                    model.fit(X_train)
+                    
+                    # Predict on test set (model returns 1 for inliers and -1 for outliers)
+                    y_pred = model.predict(X_test)
+                    y_pred = (y_pred == -1).astype(int)  # Convert -1 to 1 (outlier) and 1 to 0 (inlier)
+                    
+                    # Compute accuracy (assuming 'y_test' is binary: 0 for normal, 1 for fraud/outlier)
+                    accuracy = accuracy_score(y_test, y_pred)
+                    
+                    # Store results (accuracy, n_estimators, max_samples, contamination)
+                    results.append((accuracy, n_estimators, max_samples, contamination))
+
+        # Convert results to numpy array for easy manipulation
+        results = np.array(results)
+
+        # Extract accuracy, n_estimators, max_samples, contamination
+        accuracies = results[:, 0]
+        n_estimators_vals = results[:, 1]
+        max_samples_vals = results[:, 2]
+        contamination_vals = results[:, 3]
+
+        # Create 3D plot
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+
+        # Scatter plot
+        sc = ax.scatter(n_estimators_vals, max_samples_vals, contamination_vals, c=accuracies, cmap='viridis')
+
+        # Labels and title
+        ax.set_xlabel('n_estimators')
+        ax.set_ylabel('max_samples')
+        ax.set_zlabel('contamination')
+        ax.set_title('Isolation Forest: Hyperparameter Tuning vs Accuracy')
+
+        # Colorbar for accuracy
+        plt.colorbar(sc, label='Accuracy')
+
+        # Show plot
+        plt.show()
 
 
     # Visualizes IsolationForest in two dimensions (amount_norm and new_balance_origin_normalized)

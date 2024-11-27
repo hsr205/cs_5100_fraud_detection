@@ -107,7 +107,8 @@ def main() -> int:
     epoch_loss_list: list[list[float]] = model.train_neural_network(epochs=20)
     model.write_results(epoch_loss_list=epoch_loss_list)
     model.save_model_state()
-    model.test_neural_network()
+    accuracy_results: Accuracy = model.test_neural_network()
+    model.display_testing_results(accuracy_obj=accuracy_results)
     model.launch_tensor_board()
     return 0
 ```

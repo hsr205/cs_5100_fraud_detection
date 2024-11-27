@@ -60,7 +60,7 @@ class DataPreprocessor:
         return testing_loader
 
     def _create_data_loader(self, features_tensor: torch.Tensor, labels_tensor: torch.Tensor,
-                            batch_size: int = 512) -> DataLoader:
+                            batch_size: int = 256) -> DataLoader:
         """
         Creates a DataLoader from feature / label tensors.
 
@@ -99,7 +99,6 @@ class DataPreprocessor:
 
         dataframe: pd.DataFrame = self.fraud_data_frame
 
-
         fraud_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 1].head(n_samples)
         valid_observations: pd.DataFrame = dataframe[dataframe[Constants.IS_FRAUD] == 0].head(n_samples)
 
@@ -111,8 +110,6 @@ class DataPreprocessor:
         features_dataframe: pd.DataFrame = combined_observations.drop(columns=[Constants.IS_FRAUD])
 
         processed_observations: pd.DataFrame = self._preprocess_data_frame(input_dataframe=features_dataframe)
-
-        # logger.info(f"Columns = {processed_observations.columns}")
 
         features_array: np.array = processed_observations.values
 
@@ -210,24 +207,32 @@ class NeuralNetwork(nn.Module):
 
     def __init__(self):
         super(NeuralNetwork, self).__init__()
-        self.input_layer = nn.Linear(in_features=self._input_size, out_features=self._hidden_input_size)
-        self.dropout_layer_1 = nn.Dropout(0.2)
-        self.relu1 = nn.ReLU()
-        self.hidden_layer_1 = nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size)
-        self.dropout_layer_2 = nn.Dropout(0.5)
-        self.relu2 = nn.ReLU()
-        self.hidden_layer_2 = nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size)
-        self.relu3 = nn.ReLU()
-        self.output_layer = nn.Linear(in_features=self._hidden_input_size, out_features=self._output_size)
+        self.main = nn.Sequential(
+            nn.Linear(in_features=self._input_size, out_features=self._hidden_input_size),
+            nn.ReLU(True),
+            nn.Dropout(0.3),
+            nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size),
+            nn.ReLU(True),
+            nn.Dropout(0.4),
+            nn.Linear(in_features=self._hidden_input_size, out_features=self._hidden_input_size),
+            nn.ReLU(True),
+            nn.Linear(in_features=self._hidden_input_size, out_features=self._output_size)
+        )
 
     def forward(self, tensor_obj: Tensor) -> Tensor:
-        input_layer: Tensor = self.relu1(self.input_layer(tensor_obj))
-        drop_out_layer_1: Tensor = self.dropout_layer_1(input_layer)
-        hidden_layer_1: Tensor = self.relu2(self.hidden_layer_1(drop_out_layer_1))
-        drop_out_layer_2: Tensor = self.dropout_layer_2(hidden_layer_1)
-        hidden_layer_2: Tensor = self.relu3(self.hidden_layer_2(drop_out_layer_2))
-        output_layer: Tensor = self.output_layer(hidden_layer_2)
-        return output_layer
+        return self.main(tensor_obj)
+
+
+@dataclass
+class Accuracy:
+    total_observations: int
+    correctly_predicted_observations: int
+    true_positive: int
+    false_positive: int
+    false_negative: int
+    true_negatives: int
+    neural_network_accuracy: float
+    f1_score: float
 
 
 @dataclass
@@ -257,7 +262,7 @@ class Model:
                 inputs = inputs.view(inputs.size(0), -1)
                 # Move tensor labels to same devise the Model is located and convert values to 32-bit
                 labels = labels.to(self.device, dtype=torch.float32)
-                self.optimizer.zero_grad()  # Zero the gradients as we are going through a new interation
+                self.optimizer.zero_grad()  # Zero the gradients as we are going through a new iteration
                 outputs = self.neural_network(inputs)  # Forward pass through the neural network
                 loss = self.criterion(outputs, labels)  # Compute the loss function based of BCELoss
                 loss.backward()  # Backward pass (compute gradients) altering the weights and biases
@@ -274,7 +279,7 @@ class Model:
 
         return epoch_loss_matrix
 
-    def test_neural_network(self) -> None:
+    def test_neural_network(self) -> Accuracy:
 
         neural_network_obj: NeuralNetwork = NeuralNetwork()
         neural_network_obj.load_state_dict(
@@ -288,7 +293,10 @@ class Model:
         logger.info("===============================================")
 
         total_observations: int = 0
-        correctly_predicted_observations: int = 0
+
+        false_positive: int = 0
+        true_positive: int = 0
+        false_negative: int = 0
 
         with torch.no_grad():
             for inputs, labels in tqdm(testing_loader, "Neural Network Testing Progress"):
@@ -307,17 +315,26 @@ class Model:
                 predicted_values = predicted_values.view(-1)
                 target_tensor = target_tensor.view(-1)
 
-                correctly_predicted_observations += (predicted_values == target_tensor).sum().item()
+                false_positive += ((predicted_values == 1) & (target_tensor == 0)).sum().item()
+                true_positive += ((predicted_values == 1) & (target_tensor == 1)).sum().item()
+                false_negative += ((predicted_values == 0) & (target_tensor == 1)).sum().item()
+
                 total_observations += target_tensor.size(0)
 
-        logger.info("==============================================")
-        logger.info(f"Total Observations = {total_observations:,}")
-        logger.info(f"Correctly Predicted Observations = {correctly_predicted_observations:,}")
-        logger.info(f'Neural Network Accuracy: {(correctly_predicted_observations / total_observations) * 100:.2f}%')
-        logger.info("==============================================")
+        accuracy_obj: Accuracy = Accuracy(
+            total_observations=total_observations,
+            correctly_predicted_observations=total_observations - (false_negative + false_positive),
+            true_positive=true_positive,
+            false_positive=false_positive,
+            false_negative=false_negative,
+            true_negatives=total_observations - (false_negative + false_positive + true_positive),
+            neural_network_accuracy=(total_observations - (false_negative + false_positive)) / total_observations * 100,
+            f1_score=(2 * true_positive) / (2 * true_positive + false_positive + false_negative) * 100
+        )
 
         logger.info("Completed Neural Network Testing")
-        logger.info("==============================================")
+
+        return accuracy_obj
 
     def write_results(self, epoch_loss_list: list[list[float]]) -> None:
         """
@@ -356,6 +373,20 @@ class Model:
         logger.info("Launching TensorBoard:")
         output_directory_path: Path = Path.cwd() / "machine_learning" / "neural_network_execution_results"
         os.system("tensorboard --logdir=" + str(output_directory_path))
+
+    def display_testing_results(self, accuracy_obj: Accuracy) -> None:
+        logger.info("==============================================")
+        logger.info(f"Total Observations : {accuracy_obj.total_observations:,}")
+        logger.info(f"Correctly Predicted Observations : {accuracy_obj.correctly_predicted_observations:,}")
+        logger.info(f"Number of False Positives : {accuracy_obj.false_positive:,}")
+        logger.info(f"Number of False Negatives : {accuracy_obj.false_negative:,}")
+        logger.info(f"Number of True Positives : {accuracy_obj.true_positive:,}")
+        logger.info(f"Number of True Negatives : {accuracy_obj.true_negatives:,}")
+        logger.info(
+            f"Neural Network Accuracy : {round(accuracy_obj.neural_network_accuracy, 2):,}%")
+        logger.info(
+            f"Neural Network F_1 Score : {round(accuracy_obj.f1_score, 2):,}%")
+        logger.info("==============================================")
 
     def _get_device(self) -> device:
         """

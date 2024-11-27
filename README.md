@@ -23,6 +23,7 @@ The financial fraud detection system contains both supervised and unsupervised l
 - k_means_learning.py - script that encapsulates all k-means unsupervised learning logic 
 - neural_network.py - script that encapsulates all neural network supervised learning logic
 - requirements.txt - holds all relevant application dependencies
+- anomaly_detection.py - BRIDGET TO FILL IN
 - random_forest.py - MALHAR TO FILL IN
 - data_dictionary_20241009.xlsx - a simple excel file that outlines the description of the feature and labels contained in our dataset
 
@@ -42,28 +43,29 @@ The financial fraud detection system contains both supervised and unsupervised l
 
 ### Installation and Execution
 #### In order to execute the application you must download the following dataset, <a href="https://www.kaggle.com/datasets/sriharshaeedala/financial-fraud-detection-dataset/data">Financial Fraud Detection Dataset</a>.
-#### The dataset must be placed into the following directory 
+   
+1. The dataset must be placed into the following directory 
 
    ```bash
    cs_5100_fraud_detection/main/data/fraud_detection_data_set
    ```
 
-1. Clone the repository:
+2. Clone the repository:
    ```bash
    git clone https://github.com/your-username/cs_5100_fraud_detection.git
    ```
 
-2. Navigate to the project directory:
+3. Navigate to the project directory:
    ```bash
    cd cs_5100_fraud_detection/main
    ```
 
-3. Install the required packages:
+4. Install the required packages:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Run the application:
+5. Run the application:
    ```bash
    python3 main.py
    ```

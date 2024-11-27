@@ -55,6 +55,7 @@ class IFModel:
        
     # Identifies anomalies in the data set based on amount
     def detect(self, num_observations):
+        print(f"Processing... {num_observations} observations")
         self.fraud_data_frame = self.fraud_data_frame.sort_values(by='isFraud', ascending=False).head(num_observations)  # gets equal amounts of non-anomaly vs anomaly
         self.preprocess()
 
@@ -93,7 +94,7 @@ class IFModel:
         self.view_classification(combined_df)
 
 
-    # view errors
+    # Visualize classification matrix
     def view_classification(self, df):
         y_true = df['isFraud']
         y_pred = df['predictedFraud']
@@ -116,7 +117,6 @@ class IFModel:
 
         plt.savefig('anomaly_detection_2d.png')
         plt.show()
-
 
     # Visualizes IsolationForest in three dimensions (amount_norm, new_balance_origin_normalized, and new_balance_destination_normalized)
     def vis_3d(self):

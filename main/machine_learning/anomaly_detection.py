@@ -54,9 +54,12 @@ class IFModel:
         self.fraud_data_frame.sort_index()
        
     # Identifies anomalies in the data set based on amount
-    def detect(self, num_observations):
+    def detect(self, num_observations=16000):
         print(f"Processing... {num_observations} observations")
-        self.fraud_data_frame = self.fraud_data_frame.sort_values(by='isFraud', ascending=False).head(num_observations)  # gets equal amounts of non-anomaly vs anomaly
+        if num_observations > len(self.fraud_data_frame[self.fraud_data_frame['isFraud'] == 1]): # if number of observations is greater than the number of anomalies in the dataset
+            self.fraud_data_frame = self.fraud_data_frame.sort_values(by='isFraud', ascending=False) # include all anomlies
+            
+        self.fraud_data_frame = self.fraud_data_frame.head(num_observations)  # only use limited amount to make analysis more efficient
         self.preprocess()
 
         # Create ID column to track individual transactions after the model is trained and evaluated

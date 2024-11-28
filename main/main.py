@@ -25,16 +25,9 @@ def main() -> int:
                                                                                          file_name=file_name)
 
 
-    #model: Model = Model(fraud_data_frame=fraud_data_frame)
-    '''epoch_loss_list: list[list[float]] = model.train_neural_network(num_observations=num_observations,
-                                                                    batch_size=batch_size)
-    model.write_results(epoch_loss_list=epoch_loss_list)
-    model.save_modxel_state()
-    model.launch_tensor_board()'''
-
     # 
     if_model: IFModel = IFModel(fraud_data_frame=fraud_data_frame)
-    if_model.detect(16000) # change number of observations
+    if_model.detect(32000) # change number of observations
 
     return 0
 

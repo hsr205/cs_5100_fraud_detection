@@ -7,6 +7,7 @@ We additional aim to provide reasoning for the choices we made
 with regard to the specific approaches used within our neural network.
 </p>
 
+---
 
 ## Table of Contents
 

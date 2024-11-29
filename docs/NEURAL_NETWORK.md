@@ -1,6 +1,5 @@
 # Neural Network Documentation
 
----
 <p>
 This documentation express the contents of each class within the 
 neural_network.py module and explains the intricacies of each classes methods
@@ -8,7 +7,6 @@ We additional aim to provide reasoning for the choices we made
 with regard to the specific approaches used within our neural network.
 </p>
 
----
 
 ## Table of Contents
 
@@ -21,11 +19,8 @@ with regard to the specific approaches used within our neural network.
 
 ## Classes
 
----
 
 ## DataPreprocessor
-
----
 
 
 `__init__()` - Initializes the DataTransformer with a DataFrame, setting it up for further transformations and tensor
@@ -36,11 +31,7 @@ conversions.
 `get_test_loader()` - FILL IN
 
 
----
-
 ## NeuralNetwork
-
----
 
 
 `__init__()`
@@ -53,11 +44,7 @@ conversions.
 
 `forward()` - ADD DESCRIPTION
 
----
-
 ## Model
-
----
 
 `__init__()` - ADD DESCRIPTION
 
@@ -111,11 +98,7 @@ def main() -> int:
     return 0
 ```
 
----
-
 ## Sample_Execution_Output
-
----
 
 ```
 2024-11-18 12:45:48 PM - INFO - File found in zip: synthetic_financial_datasets_log.csv
@@ -166,7 +149,3 @@ TensorBoard 2.18.0 at http://localhost:6006/ (Press CTRL+C to quit)
 
 Process finished with exit code 0
 ```
-
----
-
-

@@ -30,6 +30,7 @@ conversions.
 
 `get_test_loader()` - FILL IN
 
+---
 
 ## NeuralNetwork
 
@@ -43,6 +44,8 @@ conversions.
     4. New Balance Destination
 
 `forward()` - ADD DESCRIPTION
+
+---
 
 ## Model
 
@@ -97,6 +100,8 @@ def main() -> int:
     model.launch_tensor_board()
     return 0
 ```
+
+---
 
 ## Sample_Execution_Output
 

@@ -1,6 +1,5 @@
 # Neural Network Documentation
 
----
 <p>
 This documentation express the contents of each class within the 
 neural_network.py module and explains the intricacies of each classes methods
@@ -18,35 +17,25 @@ with regard to the specific approaches used within our neural network.
     - [Model](#Model)
     - [Execution_Code](#Execution_Code)
     - [Sample_Execution_Output](#Sample_Execution_Output)
-    - [Results](#Results)
+
+---
 
 ## Classes
 
----
 
 ## DataPreprocessor
-
----
 
 
 `__init__()` - Initializes the DataTransformer with a DataFrame, setting it up for further transformations and tensor
 conversions.
 
-`preprocess_data_frame()` - Applies various preprocessing steps to the DataFrame, including dropping columns, mapping
-values, standardization, feature creation, quantile transformation, and saving the final DataFrame
+`get_training_loader()` - FILL IN
 
-`get_y_labels_as_tensor()` - Extracts and converts the isFraud column (target labels) into a PyTorch tensor for use in
-model training.
-
-`get_x_labels_as_tensor()` - Extracts all feature columns (excluding isFraud) and converts them into a PyTorch tensor,
-preparing the data for model input.
-
+`get_test_loader()` - FILL IN
 
 ---
 
 ## NeuralNetwork
-
----
 
 
 `__init__()`
@@ -63,21 +52,23 @@ preparing the data for model input.
 
 ## Model
 
----
-
 `__init__()` - ADD DESCRIPTION
 
 `train_neural_network()` - will train the neural network and return a list of lists called epoch_loss_matrix. The list
-at position k will be contain the running loss for the kth epoch.
+at position k will be contained the running loss for the kth epoch.
 
-`get_device()` - will check to see if cuda is available and if so move the model tensor to the available GPU
+`test_neural_network()` - FILL IN
 
 `write_results()` - using the takes the results of the most recent model training and stores it in a
 
-`save_model_state()` - saves the model weights as a dictionary stored in a .pth file to be used later
-
 `launch_tensor_board()` - will launch tensor board at the local host http://localhost:6006/ where the loss function over
 time of all runs found in main/machine_learning/neural_network_execution_results
+
+`display_testing_results()` - FILL IN
+
+`save_model_state()` - saves the model weights as a dictionary stored in a .pth file to be used later
+
+`get_device()` - will check to see if cuda is available and if so move the model tensor to the available GPU
 
 ---
 
@@ -116,8 +107,6 @@ def main() -> int:
 ---
 
 ## Sample_Execution_Output
-
----
 
 ```
 2024-11-18 12:45:48 PM - INFO - File found in zip: synthetic_financial_datasets_log.csv
@@ -168,18 +157,3 @@ TensorBoard 2.18.0 at http://localhost:6006/ (Press CTRL+C to quit)
 
 Process finished with exit code 0
 ```
-
----
-
-## Results
-
----
-
-| Model Num | Num Input Layer Nodes | Num Hidden Layer Nodes | Num Output Layer Nodes | Learning Rate | Num Epochs | Used Drop Out Layers | Loss Function Result After N-Epochs |
-|:---------:|:---------------------:|:----------------------:|:----------------------:|:-------------:|:----------:|:--------------------:|:-----------------------------------:|
-|     1     |           8           |           5            |           1            |     0.001     |     10     |          No          |               0.0058                |
-|     2     |           8           |           5            |           1            |     0.001     |     11     |         Yes          |               0.0088                |
-
----
-
-

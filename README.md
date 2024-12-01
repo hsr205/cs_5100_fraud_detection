@@ -43,29 +43,32 @@ The financial fraud detection system contains both supervised and unsupervised l
 
 ### Installation and Execution
 #### In order to execute the application you must download the following dataset, <a href="https://www.kaggle.com/datasets/sriharshaeedala/financial-fraud-detection-dataset/data">Financial Fraud Detection Dataset</a>.
-   
-1. The dataset must be placed into the following directory 
+
+1. After downloading the dataset, the dataset must be compressed into a ZIP file in order for the application to work as intended.
+
+
+2. The dataset must be placed into the following directory 
 
    ```bash
    cs_5100_fraud_detection/main/data/fraud_detection_data_set
    ```
 
-2. Clone the repository:
+3. Clone the repository:
    ```bash
    git clone https://github.com/your-username/cs_5100_fraud_detection.git
    ```
 
-3. Navigate to the project directory:
+4. Navigate to the project directory:
    ```bash
    cd cs_5100_fraud_detection/main
    ```
 
-4. Install the required packages:
+5. Install the required packages:
    ```bash
    pip install -r requirements.txt
    ```
 
-5. Run the application:
+6. Run the application:
    ```bash
    python3 main.py
    ```

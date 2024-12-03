@@ -140,7 +140,7 @@ class RandomForest:
     A simple implementation of a Random Forest classifier.
     """
 
-    def __init__(self, num_trees=3, max_depth=3, min_samples_split=2):
+    def __init__(self, num_trees=7, max_depth=9, min_samples_split=7):
         """
         Initializes the RandomForest object.
 
@@ -197,36 +197,3 @@ class RandomForest:
         tree_predictions = np.array([tree.predict(X) for tree in self.trees])
         return np.apply_along_axis(lambda x: Counter(x).most_common(1)[0][0], axis=0, arr=tree_predictions)
 
-    def plot_decision_boundary(self, X, y, title="Random Forest Decision Boundary"):
-        """
-        Plots the decision boundary for a RandomForest classifier.
-
-        Parameters:
-        - X: Feature matrix (2D).
-        - y: Target labels.
-        - title: Title of the plot.
-        """
-        if X.shape[1] != 2:
-            raise ValueError("Decision boundary can only be plotted for 2D data.")
-
-        # Create a mesh grid
-        x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
-        y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-        xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1),
-                             np.arange(y_min, y_max, 0.1))
-
-        # Predict on the grid
-        grid_points = np.c_[xx.ravel(), yy.ravel()]
-        Z = self.predict(grid_points)
-        Z = Z.reshape(xx.shape)
-
-        # Plot the decision boundary
-        cmap_light = ListedColormap(['#FFAAAA', '#AAAAFF', '#AAFFAA'])
-        plt.contourf(xx, yy, Z, alpha=0.8, cmap=cmap_light)
-
-        # Plot the original data points
-        plt.scatter(X[:, 0], X[:, 1], c=y, edgecolor='k', s=20, cmap=plt.cm.Paired)
-        plt.title(title)
-        plt.xlabel("Feature 1")
-        plt.ylabel("Feature 2")
-        plt.show()

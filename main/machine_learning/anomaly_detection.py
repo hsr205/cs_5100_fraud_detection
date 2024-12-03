@@ -4,7 +4,7 @@ import pandas as pd
 
 from data.custom_data_loader import CustomDataLoader
 from data.fraud_data import FraudDataset
-
+from logger import Logger
 from sklearn.ensemble import IsolationForest
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.compose import ColumnTransformer
@@ -17,6 +17,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from .neural_network import DataPreprocessor
+
+logger: Logger = Logger().get_logger()
 
 class IFProcessor(DataPreprocessor):
 
@@ -55,7 +57,7 @@ class IFModel:
        
     # Identifies anomalies in the data set based on amount
     def detect(self, num_observations=16000):
-        print(f"Processing... {num_observations} observations")
+        logger.info(f"Processing {num_observations} observations")
         if num_observations > len(self.fraud_data_frame[self.fraud_data_frame['isFraud'] == 1]): # if number of observations is greater than the number of anomalies in the dataset
             self.fraud_data_frame = self.fraud_data_frame.sort_values(by='isFraud', ascending=False) # include all anomlies
             
@@ -73,26 +75,27 @@ class IFModel:
         X = self.fraud_data_frame[features]
 
         # Apply Isolation Forest --> parameters determined through trial and error
+        logger.info("Constructing IsolationForest")
         iso_forest = IsolationForest(n_estimators=132, contamination=0.35, max_samples=0.15, random_state=self.random_seed)
         self.fraud_data_frame['predictedFraud'] = iso_forest.fit_predict(X)
 
         # Convert -1 to 1 for anomalies, and 1 to 0 for normal points
         self.fraud_data_frame['predictedFraud'] = self.fraud_data_frame['predictedFraud'].apply(lambda x: 1 if x == -1 else 0)
 
+        logger.info("Creating 2d visualization")
         self.vis_2d()
+        logger.info("Creating 3d visualization")
         self.vis_3d()
 
         combined_df = pd.merge(self.fraud_data_frame, df, on='ID', how='left')
-        
-        #combined_df.to_csv('final_df.csv')
 
         # Calculate accuracy
         accuracy = (combined_df['isFraud'] == combined_df['predictedFraud']).mean()
-        print(f"Accuracy: {accuracy}")
+        logger.info(f"Accuracy: {accuracy}")
 
         # Calculate f1 score
         f1 = f1_score(combined_df['isFraud'], combined_df['predictedFraud'])
-        print(f"F1 Score: {f1}")
+        logger.info(f"F1 Score: {f1}")
 
         self.view_classification(combined_df)
 
@@ -103,11 +106,12 @@ class IFModel:
         y_pred = df['predictedFraud']
 
         cm = confusion_matrix(y_true, y_pred)
-        sns.heatmap(cm, annot=True, fmt='g')
+        fig, ax = plt.subplots()
+        sns.heatmap(cm, annot=True, fmt='g', ax=ax)
         plt.xlabel('Predicted')
         plt.ylabel('True')
         plt.savefig('view_classification.png')
-        plt.show()
+        #plt.show()
 
     # Visualizes IsolationForest in two dimensions (amount_norm and new_balance_origin_normalized)
     def vis_2d(self):
@@ -119,9 +123,9 @@ class IFModel:
         plt.ylabel("New Balance Origin")
 
         plt.savefig('anomaly_detection_2d.png')
-        plt.show()
+        #plt.show()
 
-    # Visualizes IsolationForest in three dimensions (amount_norm, new_balance_origin_normalized, and new_balance_destination_normalized)
+    # Visualizes IsolationForest in three dimensions (amount_norm, new_balance_origin_normalized, and new_balance_destination_normalized) GenAI used in developing code for visualization
     def vis_3d(self):
 
         # 3D scatter plot of the anomalies and normal points
@@ -149,4 +153,4 @@ class IFModel:
 
         # Show the plot
         plt.savefig('anomaly_detection_3d.png')
-        plt.show()
+        #plt.show()

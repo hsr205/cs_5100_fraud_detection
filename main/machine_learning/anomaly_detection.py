@@ -125,7 +125,7 @@ class IFModel:
         plt.savefig('anomaly_detection_2d.png')
         #plt.show()
 
-    # Visualizes IsolationForest in three dimensions (amount_norm, new_balance_origin_normalized, and new_balance_destination_normalized)
+    # Visualizes IsolationForest in three dimensions (amount_norm, new_balance_origin_normalized, and new_balance_destination_normalized) GenAI used in developing code for visualization
     def vis_3d(self):
 
         # 3D scatter plot of the anomalies and normal points

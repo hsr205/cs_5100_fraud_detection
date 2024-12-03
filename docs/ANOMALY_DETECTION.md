@@ -92,8 +92,6 @@ F1 Score: 0.4523275175559256
 
 Resources used in the creation of this model and methods
 
-* https://chatgpt.com
-
 * https://scikit-learn.org/1.5/modules/generated/sklearn.ensemble.IsolationForest.html
 
 * https://scikit-learn.org/stable/auto_examples/ensemble/plot_isolation_forest.html

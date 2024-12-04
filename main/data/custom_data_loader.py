@@ -2,7 +2,6 @@ import zipfile
 from dataclasses import dataclass
 
 import pandas as pd
-
 from logger import Logger
 
 logger: Logger = Logger().get_logger()

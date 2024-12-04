@@ -110,6 +110,5 @@ class tSNE:
         image_path = Path.cwd() / "data" / "t-SNE_results"
         image_path.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
         plt.savefig(str(image_path / "t-SNE_result.png"), dpi=300)
-        plt.show()
 
         logger.info("Finished plotting!")

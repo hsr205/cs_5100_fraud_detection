@@ -212,7 +212,6 @@ class RandomForest:
         X_train, y_train, X_test, y_test = self._create_training_testing_sets(
             data, target_column, fraud_samples, non_fraud_samples
         )
-        print(f"Training set size: {X_train.shape}, Testing set size: {X_test.shape}")
 
         for _ in range(self.num_trees):
             tree = DecisionTree(max_depth=self.max_depth, min_samples_split=self.min_samples_split)

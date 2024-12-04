@@ -54,7 +54,7 @@ class KMeansLearning:
         None
         """
         print("Starting K-Means")
-        print("===============================================")
+        print("===========================================================")
         self.data_frame = data_processing(data_frame)
 
         self.fraud = self.data_frame[13]
@@ -237,11 +237,11 @@ class KMeansLearning:
             fraud_trans = len(fraudulent_transactions)
 
             print(
-                f"Proportion of all fraudulent transactions in cluster {count}: {round((fraud_trans / num_fraud) * 100, 2):,%}")
+                f"Proportion of all fraudulent transactions in cluster {count}: {round((fraud_trans / num_fraud), 2)}")
 
-        print("===============================================")
+        print("===========================================================")
         print("Ending K-Means")
-        print("===============================================")
+        print("===========================================================")
 
         plt.title("Fraudulent Data, Clustered")
         plt.xlabel("New Balance Origin, Normalized")

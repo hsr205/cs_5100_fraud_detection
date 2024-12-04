@@ -110,7 +110,7 @@ class IFModel:
         sns.heatmap(cm, annot=True, fmt='g', ax=ax)
         plt.xlabel('Predicted')
         plt.ylabel('True')
-        plt.savefig('anomaly_detection_images/view_classification.png')
+        plt.savefig('machine_learning/anomaly_detection_images/view_classification.png')
         #plt.show()
 
     # Visualizes IsolationForest in two dimensions (amount_norm and new_balance_origin_normalized)
@@ -122,7 +122,7 @@ class IFModel:
         plt.xlabel("Amount")
         plt.ylabel("New Balance Origin")
 
-        plt.savefig('anomaly_detection_images/anomaly_detection_2d.png')
+        plt.savefig('machine_learning/anomaly_detection_images/anomaly_detection_2d.png')
         #plt.show()
 
     # Visualizes IsolationForest in three dimensions (amount_norm, new_balance_origin_normalized, and new_balance_destination_normalized) GenAI used in developing code for visualization
@@ -153,5 +153,5 @@ class IFModel:
 
         # Show the plot
 
-        plt.savefig('anomaly_detection_images/anomaly_detection_3d.png')
+        plt.savefig('machine_learning/anomaly_detection_images/anomaly_detection_3d.png')
         #plt.show()

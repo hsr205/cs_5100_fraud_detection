@@ -7,6 +7,7 @@ from data.fraud_data import FraudDataset
 from machine_learning.anomaly_detection import IFModel
 from machine_learning.neural_network import Accuracy
 from machine_learning.neural_network import Model
+from data.synthetic_data_creation import tSNE
 
 
 def main() -> int:
@@ -23,9 +24,10 @@ def main() -> int:
 
     fraud_data_frame: pd.DataFrame = fraud_data.data_loader.get_data_frame_from_zip_file(file_path=file_path_to_data,
                                                                                          file_name=file_name)
+    tsne = tSNE(fraud_data_frame,8_000)
+    tsne.visualize()
     isolation_forest: IFModel = IFModel(fraud_data_frame=fraud_data_frame)
     isolation_forest.detect(16000)
-
     model: Model = Model(fraud_data_frame=fraud_data_frame)
     epoch_loss_list: list[list[float]] = model.train_neural_network(epochs=20)
     model.write_results(epoch_loss_list=epoch_loss_list)

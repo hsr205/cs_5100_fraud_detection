@@ -2,7 +2,6 @@
 from pathlib import Path
 
 from sklearn.compose import ColumnTransformer
-import numpy as np
 from logger import Logger
 from sklearn.manifold import TSNE
 import pandas as pd
@@ -10,7 +9,6 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from static.constants import Constants
 import matplotlib.pyplot as plt
 import numpy as np
-from machine_learning.neural_network import DataPreprocessor
 from tqdm import tqdm
 
 logger: Logger = Logger().get_logger()
@@ -20,8 +18,6 @@ class tSNE:
 
         logger.info("initializing t-SNE object .....")
         fraud_data_frame = fraud_data_frame[fraud_data_frame[Constants.IS_FRAUD] == 1]
-        nonfraudulent_data_frame = fraud_data_frame[fraud_data_frame[Constants.IS_FRAUD] == 0].sample()
-
 
         self.labels_array: np.array = fraud_data_frame[Constants.IS_FRAUD].values
         features_dataframe: pd.DataFrame = fraud_data_frame.drop(columns=[Constants.IS_FRAUD])

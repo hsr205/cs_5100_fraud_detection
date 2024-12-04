@@ -4,9 +4,9 @@ import pandas as pd
 
 from data.custom_data_loader import CustomDataLoader
 from data.fraud_data import FraudDataset
+from machine_learning.anomaly_detection import IFModel
 from machine_learning.neural_network import Accuracy
 from machine_learning.neural_network import Model
-from machine_learning.anomaly_detection import IFModel
 
 
 def main() -> int:
@@ -34,3 +34,6 @@ def main() -> int:
     model.display_testing_results(accuracy_obj=accuracy_results)
     model.launch_tensor_board()
     return 0
+
+if(__name__ == "__main__"):
+    main()

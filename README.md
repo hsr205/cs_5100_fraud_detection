@@ -23,7 +23,7 @@ The financial fraud detection system contains both supervised and unsupervised l
 - k_means_learning.py - script that encapsulates all k-means unsupervised learning logic 
 - neural_network.py - script that encapsulates all neural network supervised learning logic
 - requirements.txt - holds all relevant application dependencies
-- anomaly_detection.py - script that encapsulates all anomaly detection / isolation forest unsupervised learning logic
+- anomaly_detection.py - script that encapsulate all isolation forest unsupervised learning logic
 - random_forest.py - MALHAR TO FILL IN
 - data_dictionary_20241009.xlsx - a simple excel file that outlines the description of the feature and labels contained in our dataset
 

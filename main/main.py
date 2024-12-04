@@ -36,6 +36,3 @@ def main() -> int:
     model.display_testing_results(accuracy_obj=accuracy_results)
     model.launch_tensor_board()
     return 0
-
-if(__name__ == "__main__"):
-    main()

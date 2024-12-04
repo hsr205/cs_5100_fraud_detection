@@ -1,6 +1,7 @@
 from collections import Counter
 
 import numpy as np
+import pandas as pd
 
 
 class DecisionTree:
@@ -167,20 +168,59 @@ class RandomForest:
         indices = np.random.choice(n_samples, n_samples, replace=True)
         return X[indices], y[indices]
 
-    def fit(self, X, y):
+    def _create_training_testing_sets(self, data, target_column='isFraud', fraud_samples=6000, non_fraud_samples=6000):
+        """
+        Splits the data into custom training and testing sets.
+
+        Parameters:
+        - data: The transformed DataFrame.
+        - target_column: The column name for the target variable.
+        - fraud_samples: Number of fraud samples for training.
+        - non_fraud_samples: Number of non-fraud samples for training.
+
+        Returns:
+        - X_train, y_train: Training features and labels.
+        - X_test, y_test: Testing features and labels.
+        """
+        fraud_data = data[data[target_column] == 1]
+        non_fraud_data = data[data[target_column] == 0]
+
+        fraud_train = fraud_data.sample(n=fraud_samples, random_state=42)
+        non_fraud_train = non_fraud_data.sample(n=non_fraud_samples, random_state=42)
+
+        train_data = pd.concat([fraud_train, non_fraud_train]).sample(frac=1, random_state=42)
+        test_data = data.drop(train_data.index)
+
+        X_train = train_data.drop(columns=target_column).values
+        y_train = train_data[target_column].values
+        X_test = test_data.drop(columns=target_column).values
+        y_test = test_data[target_column].values
+
+        return X_train, y_train, X_test, y_test
+
+    def fit(self, data, target_column='isFraud', fraud_samples=6000, non_fraud_samples=6000):
         """
         Trains the RandomForest on the given data.
 
         Parameters:
-        - X: Feature matrix.
-        - y: Target labels.
+        - data: The transformed DataFrame.
+        - target_column: The column name for the target variable.
+        - fraud_samples: Number of fraud samples for training.
+        - non_fraud_samples: Number of non-fraud samples for training.
         """
         self.trees = []
+        X_train, y_train, X_test, y_test = self._create_training_testing_sets(
+            data, target_column, fraud_samples, non_fraud_samples
+        )
+        print(f"Training set size: {X_train.shape}, Testing set size: {X_test.shape}")
+
         for _ in range(self.num_trees):
             tree = DecisionTree(max_depth=self.max_depth, min_samples_split=self.min_samples_split)
-            X_sample, y_sample = self._bootstrap_sample(X, y)
+            X_sample, y_sample = self._bootstrap_sample(X_train, y_train)
             tree.tree = tree.fit(X_sample, y_sample)
             self.trees.append(tree)
+
+        return X_test, y_test
 
     def predict(self, X):
         """

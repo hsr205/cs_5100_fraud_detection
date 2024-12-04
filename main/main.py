@@ -8,6 +8,7 @@ from data.fraud_data import FraudDataset
 from data.synthetic_data_creation import tSNE
 from data_preprocessing.data_preprocessing import DataTransformer
 from machine_learning.anomaly_detection import IFModel
+from machine_learning.k_means_learning import KMeansLearning
 from machine_learning.neural_network import Accuracy
 from machine_learning.neural_network import Model
 from machine_learning.random_forest import RandomForest
@@ -28,8 +29,9 @@ def main() -> int:
     fraud_data_frame: pd.DataFrame = fraud_data.data_loader.get_data_frame_from_zip_file(file_path=file_path_to_data,
                                                                                          file_name=file_name)
     execute_random_forest(fraud_data_frame=fraud_data_frame)
-    execute_isolation_forest(fraud_data_frame=fraud_data_frame)
+    execute_k_means(fraud_data_frame=fraud_data_frame)
     execute_tsne(fraud_data_frame=fraud_data_frame)
+    execute_isolation_forest(fraud_data_frame=fraud_data_frame)
     execute_neural_network(fraud_data_frame=fraud_data_frame)
     return 0
 
@@ -37,6 +39,13 @@ def main() -> int:
 def execute_tsne(fraud_data_frame: pd.DataFrame) -> None:
     tsne = tSNE(fraud_data_frame, 8_000)
     tsne.visualize()
+
+
+def execute_k_means(fraud_data_frame: pd.DataFrame) -> None:
+    k_means: KMeansLearning = KMeansLearning(data_frame=fraud_data_frame, k=3)
+
+    k_means.execute_clustering(3)
+    k_means.visualize_clusters(6, 7)
 
 
 def execute_isolation_forest(fraud_data_frame: pd.DataFrame) -> None:
@@ -80,6 +89,7 @@ def execute_random_forest(fraud_data_frame: pd.DataFrame) -> None:
     # Step 5: Calculate accuracy
     accuracy = accuracy_score(y_test, predictions) * 100
     print(f"Test Set Accuracy: {accuracy:.2f}%")
+
 
 if __name__ == "__main__":
     main()

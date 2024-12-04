@@ -1,12 +1,11 @@
-from typing import Any
 import math
-import sys
+from typing import Any
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from sklearn.compose import ColumnTransformer
-
 from matplotlib import ticker
+from sklearn.compose import ColumnTransformer
 
 from .neural_network import DataPreprocessor as dp
 
@@ -153,7 +152,6 @@ class KMeansLearning:
     def cluster_mean(self, cluster):
         """ Returns the mean value of the given cluster """
 
-
         return pd.DataFrame(cluster).mean(axis=0)
 
     def execute_clustering(self, k, init_type="forgy"):
@@ -202,7 +200,7 @@ class KMeansLearning:
 
             centroids = new_centroids
 
-            print(f"{count+1} iteration completed")
+            print(f"{count + 1} iteration completed")
             count += 1
 
             if converged:
@@ -238,8 +236,8 @@ class KMeansLearning:
 
             fraud_trans = len(fraudulent_transactions)
 
-
-            print(f"Proportion of all fraudulent transactions in cluster {count}: {round((fraud_trans / num_fraud) *100, 2):,%}")
+            print(
+                f"Proportion of all fraudulent transactions in cluster {count}: {round((fraud_trans / num_fraud) * 100, 2):,%}")
 
         print("===============================================")
         print("Ending K-Means")

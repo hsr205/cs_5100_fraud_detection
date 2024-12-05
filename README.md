@@ -24,7 +24,7 @@ The financial fraud detection system contains both supervised and unsupervised l
 - neural_network.py - script that encapsulates all neural network supervised learning logic
 - requirements.txt - holds all relevant application dependencies
 - anomaly_detection.py - script that encapsulate all isolation forest unsupervised learning logic
-- random_forest.py - MALHAR TO FILL IN
+- random_forest.py - script that encapsulates the logic of supervised machine learning technique Random Forest using Decision Trees 
 - data_dictionary_20241009.xlsx - a simple excel file that outlines the description of the feature and labels contained in our dataset
 
 ## Getting Started

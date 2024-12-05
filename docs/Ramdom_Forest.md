@@ -69,4 +69,24 @@ Run the following code from main.py file to run Random Forest
 
 ![image](https://github.com/user-attachments/assets/6571a139-5b9f-47bd-94bc-2de6a4ea712f)
 
+---
+
+## Sample_Execution_Output
+
+```
+2024-11-27 05:27:18 PM - INFO - File found in zip: data_dictionary_20241009.xlsx
+2024-11-27 05:27:18 PM - INFO - File found in zip: __MACOSX/._data_dictionary_20241009.xlsx
+2024-11-27 05:27:18 PM - INFO - File found in zip: Synthetic_Financial_datasets_log.csv
+2024-11-27 05:27:18 PM - INFO - File found in zip: __MACOSX/._Synthetic_Financial_datasets_log.csv
+2024-11-27 05:27:22 PM - INFO - File found in zip: data_dictionary_20241009.xlsx
+2024-11-27 05:27:22 PM - INFO - File found in zip: __MACOSX/._data_dictionary_20241009.xlsx
+2024-11-27 05:27:22 PM - INFO - File found in zip: Synthetic_Financial_datasets_log.csv
+2024-11-27 05:27:22 PM - INFO - File found in zip: __MACOSX/._Synthetic_Financial_datasets_log.csv
+Processing... 16000 observations
+Accuracy: 0.5271875
+F1 Score: 0.4523275175559256
+```
+
+---
+
 

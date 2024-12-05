@@ -86,3 +86,8 @@ Test Set Accuracy: 89.22%
 ---
 
 
+
+Resources used in the creation of this model and methods
+
+* https://scikit-learn.org/1.5/modules/generated/sklearn.ensemble.IsolationForest.html
+  

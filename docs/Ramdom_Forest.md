@@ -74,17 +74,13 @@ Run the following code from main.py file to run Random Forest
 ## Sample_Execution_Output
 
 ```
-2024-11-27 05:27:18 PM - INFO - File found in zip: data_dictionary_20241009.xlsx
-2024-11-27 05:27:18 PM - INFO - File found in zip: __MACOSX/._data_dictionary_20241009.xlsx
-2024-11-27 05:27:18 PM - INFO - File found in zip: Synthetic_Financial_datasets_log.csv
-2024-11-27 05:27:18 PM - INFO - File found in zip: __MACOSX/._Synthetic_Financial_datasets_log.csv
-2024-11-27 05:27:22 PM - INFO - File found in zip: data_dictionary_20241009.xlsx
-2024-11-27 05:27:22 PM - INFO - File found in zip: __MACOSX/._data_dictionary_20241009.xlsx
-2024-11-27 05:27:22 PM - INFO - File found in zip: Synthetic_Financial_datasets_log.csv
-2024-11-27 05:27:22 PM - INFO - File found in zip: __MACOSX/._Synthetic_Financial_datasets_log.csv
-Processing... 16000 observations
-Accuracy: 0.5271875
-F1 Score: 0.4523275175559256
+Loading raw data...
+Preprocessing data...
+Loading transformed data...
+Fitting RandomForest model...
+Training set size: (12000, 12), Testing set size: (4213, 12)
+Making predictions on the test set...
+Test Set Accuracy: 89.22%
 ```
 
 ---

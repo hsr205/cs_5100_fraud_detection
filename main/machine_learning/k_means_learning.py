@@ -217,6 +217,8 @@ class KMeansLearning:
 
         count = 0
 
+        colors = []
+
         num_fraud = len(self.fraud[self.fraud == 1])
 
         for clust in self.clusters:
@@ -247,3 +249,13 @@ class KMeansLearning:
         plt.xlabel("New Balance Origin, Normalized")
         plt.ylabel("New Balance Destination, Normalized")
         plt.legend()
+        plt.savefig("k_means_plot.png")
+        plt.show()
+
+
+
+
+
+        
+
+
